@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="utf-8"?>
+<locale xmlns="http://docbook.org/ns/docbook/l10n/source"
+         xmlns:db="http://docbook.org/ns/docbook"
+         language="eu"
+         english-language-name="Basque">
+   <info>
+      <authorgroup>
+         <author>
+            <firstname>Josu</firstname>
+            <surname>Waliño</surname>
+            <affiliation>
+               <address>
+                  <email>josu@elhuyar.com</email>
+               </address>
+            </affiliation>
+         </author>
+      </authorgroup>
+   </info>
+   <mappings>
+      <gentext key="above">goian</gentext>
+      <gentext key="Abstract">Laburpena</gentext>
+      <gentext key="abstract">Laburpena</gentext>
+      <gentext key="and">eta</gentext>
+      <gentext key="Answer">E:</gentext>
+      <gentext key="answer">E:</gentext>
+      <gentext key="Appendix">Eranskina</gentext>
+      <gentext key="appendix">eranskina</gentext>
+      <gentext key="Article">Artikulua</gentext>
+      <gentext key="article">Artikulua</gentext>
+      <gentext key="below">behean</gentext>
+      <gentext key="Bibliography">Bibliografia</gentext>
+      <gentext key="bibliography">Bibliografia</gentext>
+      <gentext key="Book">Liburua</gentext>
+      <gentext key="book">Liburua</gentext>
+      <gentext key="bullet">•</gentext>
+      <gentext key="by">Honek</gentext>
+      <gentext key="CAUTION">KONTUZ</gentext>
+      <gentext key="Caution">Kontuz</gentext>
+      <gentext key="caution">Kontuz</gentext>
+      <gentext key="Chapter">Atala</gentext>
+      <gentext key="chapter">atala</gentext>
+      <gentext key="Colophon">Azken ohar</gentext>
+      <gentext key="colophon">Azken ohar</gentext>
+      <gentext key="Copyright">Copyright</gentext>
+      <gentext key="copyright">Copyright</gentext>
+      <gentext key="Dedication">Eskaintza</gentext>
+      <gentext key="dedication">Eskaintza</gentext>
+      <gentext key="Draft">Zirriborroa</gentext>
+      <gentext key="Edited">editatua</gentext>
+      <gentext key="edited">editatua</gentext>
+      <gentext key="Editedby">Honek editatua</gentext>
+      <gentext key="editedby">Honek editatua</gentext>
+      <gentext key="Edition">Edizioa</gentext>
+      <gentext key="edition">Edizioa</gentext>
+      <gentext key="endquote">”</gentext>
+      <gentext key="Equation">Ekuazioa</gentext>
+      <gentext key="equation">Ekuazioa</gentext>
+      <gentext key="Example">Adibidea</gentext>
+      <gentext key="example">Adibidea</gentext>
+      <gentext key="Figure">Irudia</gentext>
+      <gentext key="figure">Irudia</gentext>
+      <gentext key="Glossary">Glosarioa</gentext>
+      <gentext key="glossary">Glosarioa</gentext>
+      <gentext key="GlossSee">Ikus</gentext>
+      <gentext key="glosssee">Ikus</gentext>
+      <gentext key="GlossSeeAlso">Ikus baita ere</gentext>
+      <gentext key="glossseealso">Ikus baita ere</gentext>
+      <gentext key="IMPORTANT">GARRANTZITSUA</gentext>
+      <gentext key="important">Garrantzitsua</gentext>
+      <gentext key="Important">Garrantzitsua</gentext>
+      <gentext key="in">non</gentext>
+      <gentext key="Index">Indizea</gentext>
+      <gentext key="index">Indizea</gentext>
+      <gentext key="index symbols">Ikurrak</gentext>
+      <gentext key="ISBN">ISBN</gentext>
+      <gentext key="isbn">ISBN</gentext>
+      <gentext key="lastlistcomma">,</gentext>
+      <gentext key="LegalNotice">Legezko abisua</gentext>
+      <gentext key="legalnotice">Legezko abisua</gentext>
+      <gentext key="listcomma">,</gentext>
+      <gentext key="listofequations">Ekuazioen zerrenda</gentext>
+      <gentext key="ListofEquations">Ekuazioen zerrenda</gentext>
+      <gentext key="ListofExamples">Adibideen zerrenda</gentext>
+      <gentext key="listofexamples">Adibideen zerrenda</gentext>
+      <gentext key="ListofFigures">Irudien zerrenda</gentext>
+      <gentext key="listoffigures">Irudien zerrenda</gentext>
+      <gentext key="listoftables">Taulen zerrenda</gentext>
+      <gentext key="ListofTables">Taulen zerrenda</gentext>
+      <gentext key="ListofUnknown">Ezezagunen zerrenda</gentext>
+      <gentext key="listofunknown">Ezazagunen zerrenda</gentext>
+      <gentext key="MsgAud">Audientzia</gentext>
+      <gentext key="msgaud">Audientzia</gentext>
+      <gentext key="MsgLevel">Maila</gentext>
+      <gentext key="msglevel">Maila</gentext>
+      <gentext key="MsgOrig">Jatorria</gentext>
+      <gentext key="msgorig">Jatorria</gentext>
+      <gentext key="nav-home">Etxea</gentext>
+      <gentext key="nav-next">Hurrengoa</gentext>
+      <gentext key="nav-next-sibling">Aurreratze azkarra</gentext>
+      <gentext key="nav-prev">Aurrekoa</gentext>
+      <gentext key="nav-prev-sibling">Atzeratze azkarra</gentext>
+      <gentext key="nav-up">Gora</gentext>
+      <gentext key="nestedendquote">’</gentext>
+      <gentext key="nestedstartquote">‘</gentext>
+      <gentext key="NOTE">OHARRA</gentext>
+      <gentext key="Note">Oharra</gentext>
+      <gentext key="note">Oharra</gentext>
+      <gentext key="notes">Oharrak</gentext>
+      <gentext key="Notes">Oharrak</gentext>
+      <gentext key="or">edo</gentext>
+      <gentext key="Part">Zatia</gentext>
+      <gentext key="part">Zatia</gentext>
+      <gentext key="Pgs">Orr.</gentext>
+      <gentext key="pgs">Orr.</gentext>
+      <gentext key="Preface">Hitzaurrea</gentext>
+      <gentext key="preface">Hitzaurrea</gentext>
+      <gentext key="Procedure">Prozedura</gentext>
+      <gentext key="procedure">Prozedura</gentext>
+      <gentext key="ProductionSet">Ekoizpena</gentext>
+      <gentext key="Published">Argitaratua</gentext>
+      <gentext key="published">Argitaratua</gentext>
+      <gentext key="Qandadiv">Galdera eta E</gentext>
+      <gentext key="qandadiv">Galdera eta E</gentext>
+      <gentext key="Question">Galdera</gentext>
+      <gentext key="question">galdera</gentext>
+      <gentext key="RefEntry">Sarrera</gentext>
+      <gentext key="refentry">Sarrera</gentext>
+      <gentext key="Reference">Erreferentzia</gentext>
+      <gentext key="reference">Erreferentzia</gentext>
+      <gentext key="RefName">Izena</gentext>
+      <gentext key="refname">Izena</gentext>
+      <gentext key="RefSection">Sekzioa</gentext>
+      <gentext key="refsection">sekzioa</gentext>
+      <gentext key="RefSynopsisDiv">Laburpena</gentext>
+      <gentext key="refsynopsisdiv">Laburpena</gentext>
+      <gentext key="RevHistory">Berrikuspenaren historia</gentext>
+      <gentext key="revhistory">Berrikuspenaren historia</gentext>
+      <gentext key="Revisedby">Berrikuspena: </gentext>
+      <gentext key="revisedby">Berrikuspena: </gentext>
+      <gentext key="revision">Berrikuspena</gentext>
+      <gentext key="Revision">Berrikuspena</gentext>
+      <gentext key="sect1">Atala</gentext>
+      <gentext key="sect2">Atala</gentext>
+      <gentext key="sect3">Atala</gentext>
+      <gentext key="sect4">Atala</gentext>
+      <gentext key="sect5">Atala</gentext>
+      <gentext key="section">Atala</gentext>
+      <gentext key="Section">Atala</gentext>
+      <gentext key="sectioncalled">honela deritzon atala</gentext>
+      <gentext key="See">Ikus</gentext>
+      <gentext key="see">Ikus</gentext>
+      <gentext key="SeeAlso">Ikus baita ere</gentext>
+      <gentext key="seealso">Ikus baita ere</gentext>
+      <gentext key="Seealso">Ikus baita ere</gentext>
+      <gentext key="set">Konfiguratu</gentext>
+      <gentext key="Set">Konfiguratu</gentext>
+      <gentext key="setindex">Konfiguratu indizea</gentext>
+      <gentext key="SetIndex">Konfiguratu indizea</gentext>
+      <gentext key="Sidebar">Alboko barra</gentext>
+      <gentext key="sidebar">alboko barra</gentext>
+      <gentext key="startquote">“</gentext>
+      <gentext key="step">urratsa</gentext>
+      <gentext key="Step">Urratsa</gentext>
+      <gentext key="Table">Taula</gentext>
+      <gentext key="table">Taula</gentext>
+      <gentext key="TableNotes">Oharrak</gentext>
+      <gentext key="tablenotes">Oharrak</gentext>
+      <gentext key="TableofContents">Edukien aurkibidea</gentext>
+      <gentext key="tableofcontents">Edukien aurkibidea</gentext>
+      <gentext key="tip">Iradokizuna</gentext>
+      <gentext key="TIP">IRADOKIZUNA</gentext>
+      <gentext key="Tip">Iradokizuna</gentext>
+      <gentext key="unexpectedelementname">Ustekabeko elemetu-izena</gentext>
+      <gentext key="unsupported">onartzen ez den</gentext>
+      <gentext key="Warning">Abisua</gentext>
+      <gentext key="warning">Abisua</gentext>
+      <gentext key="WARNING">ABISUA</gentext>
+      <gentext key="writing-mode">lr-tb</gentext>
+      <gentext key="xrefto">xref honi</gentext>
+   </mappings>
+   <group name="number-format">
+      <template match="self::db:part">I</template>
+      <template match="self::db:reference">I</template>
+      <template match="self::db:appendix">A</template>
+      <template match="true()">1</template>
+   </group>
+   <group name="date-format">
+      <template match="true()">[D01] [MNn,*-3] [Y0001]</template>
+   </group>
+   <group name="datetime-format">
+      <template match="true()">[D01] [MNn,*-3] [Y0001]</template>
+   </group>
+   <group name="number-separator">
+      <template match="true()">.</template>
+   </group>
+   <group name="keycap">
+      <template match="@function = 'alt'">Alt</template>
+      <template match="@function = 'backspace'">&lt;—</template>
+      <template match="@function = 'command'">⌘</template>
+      <template match="@function = 'control'">Ctrl</template>
+      <template match="@function = 'delete'">Del</template>
+      <template match="@function = 'down'">↓</template>
+      <template match="@function = 'end'">End</template>
+      <template match="@function = 'enter'">Enter</template>
+      <template match="@function = 'escape'">Esc</template>
+      <template match="@function = 'home'">Home</template>
+      <template match="@function = 'insert'">Ins</template>
+      <template match="@function = 'left'">←</template>
+      <template match="@function = 'meta'">Meta</template>
+      <template match="@function = 'option'">⌥</template>
+      <template match="@function = 'pagedown'">Page ↓</template>
+      <template match="@function = 'pageup'">Page ↑</template>
+      <template match="@function = 'right'">→</template>
+      <template match="@function = 'shift'">Shift</template>
+      <template match="@function = 'space'">Space</template>
+      <template match="@function = 'tab'">→|</template>
+      <template match="@function = 'up'">↑</template>
+   </group>
+   <group name="name-style">
+      <template match="self::db:personname">first-last</template>
+   </group>
+   <group name="label">
+      <template match="self::db:refnamediv">{RefName}</template>
+      <template match="self::db:refname">{RefName}</template>
+      <template match="self::db:see">{See}</template>
+      <template match="self::db:seealso">{Seealso}</template>
+      <template match="self::db:editor">{Editedby}</template>
+      <template match="self::db:msgaud">{msgaud}</template>
+      <template match="self::db:msglevel">{msglevel}</template>
+      <template match="self::db:msgorig">{msgorig}</template>
+   </group>
+   <group name="label-separator">
+      <template match="self::db:msgaud">: </template>
+      <template match="self::db:msglevel">: </template>
+      <template match="self::db:msgorig">: </template>
+      <template match="self::db:editor"> </template>
+      <template match="self::db:see"> </template>
+      <template match="self::db:seealso"> </template>
+      <template match="true()">. </template>
+   </group>
+   <group name="separator">
+      <template match="true()">, </template>
+   </group>
+   <group name="table-of-contents">
+      <template match="true()">{TableofContents}</template>
+   </group>
+   <group name="list-of-figures">
+      <template match="true()">{ListofFigures}</template>
+   </group>
+   <group name="list-of-tables">
+      <template match="true()">{ListofTables}</template>
+   </group>
+   <group name="list-of-equations">
+      <template match="true()">{ListofEquations}</template>
+   </group>
+   <group name="list-of-procedures">
+      <template match="true()">{ListofProcedures}</template>
+   </group>
+   <group name="list-of-examples">
+      <template match="true()">{ListofExamples}</template>
+   </group>
+   <group name="list-of-unknown">
+      <template match="true()">{ListofUnknown}</template>
+   </group>
+   <group name="list-of-titles">
+      <template match="self::db:part[parent::db:book]">{Part} %l%.%c</template>
+      <template match="self::db:reference[parent::db:book]">{Reference} %l%.%c</template>
+      <template match="self::db:section[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect1[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect2[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect3[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect4[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect5[ancestor::db:preface]">%c</template>
+      <template match="self::db:acknowledgements">%c</template>
+      <template match="self::db:article">%c</template>
+      <template match="self::db:bibliography">%c</template>
+      <template match="self::db:book">%c</template>
+      <template match="self::db:set">%c</template>
+      <template match="self::db:colophon">%c</template>
+      <template match="self::db:dedication">%c</template>
+      <template match="self::db:formalgroup">%l%.%c</template>
+      <template match="self::db:forward">%c</template>
+      <template match="self::db:glossary">%c</template>
+      <template match="self::db:index">%c</template>
+      <template match="self::db:preface">%c</template>
+      <template match="self::db:setindex">%c</template>
+      <template match="self::db:topic">%c</template>
+      <template match="true()">%l%.%c</template>
+   </group>
+   <group name="title-unnumbered">
+      <template match="self::db:abstract">%c</template>
+      <template match="self::db:answer">%c</template>
+      <template match="self::db:article">%c</template>
+      <template match="self::db:authorblurb">%c</template>
+      <template match="self::db:bibliodiv">%c</template>
+      <template match="self::db:biblioentry">%c</template>
+      <template match="self::db:bibliography">%c</template>
+      <template match="self::db:bibliomixed">%c</template>
+      <template match="self::db:bibliomset">%c</template>
+      <template match="self::db:biblioset">%c</template>
+      <template match="self::db:blockquote">%c</template>
+      <template match="self::db:book">%c</template>
+      <template match="self::db:calloutlist">%c</template>
+      <template match="self::db:caution">%c</template>
+      <template match="self::db:colophon">%c</template>
+      <template match="self::db:dedication">%c</template>
+      <template match="self::db:equation">{Equation} %l%.%c</template>
+      <template match="self::db:example">{Example} %l%.%c</template>
+      <template match="self::db:figure">{Figure} %l%.%c</template>
+      <template match="self::db:formalpara">%c</template>
+      <template match="self::db:glossary">%c</template>
+      <template match="self::db:glossdiv">%c</template>
+      <template match="self::db:important">%c</template>
+      <template match="self::db:index">%c</template>
+      <template match="self::db:indexdiv">%c</template>
+      <template match="self::db:itemizedlist">%c</template>
+      <template match="self::db:legalnotice">%c</template>
+      <template match="self::db:listitem"/>
+      <template match="self::db:lot">%c</template>
+      <template match="self::db:msg">%c</template>
+      <template match="self::db:msgexplan">%c</template>
+      <template match="self::db:msgmain">%c</template>
+      <template match="self::db:msgrel">%c</template>
+      <template match="self::db:msgset">%c</template>
+      <template match="self::db:msgsub">%c</template>
+      <template match="self::db:note">%c</template>
+      <template match="self::db:orderedlist">%c</template>
+      <template match="self::db:part">{Part} %l%.%c</template>
+      <template match="self::db:partintro">%c</template>
+      <template match="self::db:preface">%c</template>
+      <template match="self::db:procedure">{Procedure} %l%.%c</template>
+      <template match="self::db:productionset">%c</template>
+      <template match="self::db:productionset.formal">{ProductionSet} %l</template>
+      <template match="self::db:qandadiv">%c</template>
+      <template match="self::db:qandaentry">%c</template>
+      <template match="self::db:qandaset">%c</template>
+      <template match="self::db:question">%c</template>
+      <template match="self::db:refentry">%c</template>
+      <template match="self::db:reference">%c</template>
+      <template match="self::db:refsection">%c</template>
+      <template match="self::db:refsect1">%c</template>
+      <template match="self::db:refsect2">%c</template>
+      <template match="self::db:refsect3">%c</template>
+      <template match="self::db:refsynopsisdiv">%c</template>
+      <template match="self::db:refsynopsisdivinfo">%c</template>
+      <template match="self::db:segmentedlist">%c</template>
+      <template match="self::db:set">%c</template>
+      <template match="self::db:setindex">%c</template>
+      <template match="self::db:sidebar">%c</template>
+      <template match="self::db:step">%c</template>
+      <template match="self::db:table">{Table} %l%.%c</template>
+      <template match="self::db:tip">%c</template>
+      <template match="self::db:toc">%c</template>
+      <template match="self::db:variablelist">%c</template>
+      <template match="self::db:varlistentry"/>
+      <template match="self::db:warning">%c</template>
+      <template match="true()">%c</template>
+   </group>
+   <group name="title-numbered">
+      <template match="self::db:section[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect1[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect2[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect3[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect4[ancestor::db:preface]">%c</template>
+      <template match="self::db:sect5[ancestor::db:preface]">%c</template>
+      <template match="self::db:appendix">{Appendix} %l%.%c</template>
+      <template match="self::db:bridgehead">%l%.%c</template>
+      <template match="self::db:chapter">{Chapter} %l%.%c</template>
+      <template match="self::db:part">{Part} %l%.%c</template>
+      <template match="self::db:sect1">%l%.%c</template>
+      <template match="self::db:sect2">%l%.%c</template>
+      <template match="self::db:sect3">%l%.%c</template>
+      <template match="self::db:sect4">%l%.%c</template>
+      <template match="self::db:sect5">%l%.%c</template>
+      <template match="self::db:section">%l%.%c</template>
+      <template match="self::db:simplesect">%c</template>
+      <template match="self::db:refsection">%c</template>
+      <template match="self::db:refsect1">%c</template>
+      <template match="self::db:refsect2">%c</template>
+      <template match="self::db:refsect3">%c</template>
+      <template match="self::db:abstract">%c</template>
+      <template match="self::db:answer">%c</template>
+      <template match="self::db:article">%c</template>
+      <template match="self::db:authorblurb">%c</template>
+      <template match="self::db:bibliodiv">%c</template>
+      <template match="self::db:biblioentry">%c</template>
+      <template match="self::db:bibliography">%c</template>
+      <template match="self::db:bibliomixed">%c</template>
+      <template match="self::db:bibliomset">%c</template>
+      <template match="self::db:biblioset">%c</template>
+      <template match="self::db:blockquote">%c</template>
+      <template match="self::db:book">%c</template>
+      <template match="self::db:calloutlist">%c</template>
+      <template match="self::db:caution">%c</template>
+      <template match="self::db:colophon">%c</template>
+      <template match="self::db:dedication">%c</template>
+      <template match="self::db:equation">{Equation} %l%.%c</template>
+      <template match="self::db:example">{Example} %l%.%c</template>
+      <template match="self::db:figure">{Figure} %l%.%c</template>
+      <template match="self::db:formalpara">%c</template>
+      <template match="self::db:glossary">%c</template>
+      <template match="self::db:glossdiv">%c</template>
+      <template match="self::db:important">%c</template>
+      <template match="self::db:index">%c</template>
+      <template match="self::db:indexdiv">%c</template>
+      <template match="self::db:itemizedlist">%c</template>
+      <template match="self::db:legalnotice">%c</template>
+      <template match="self::db:listitem"/>
+      <template match="self::db:lot">%c</template>
+      <template match="self::db:msg">%c</template>
+      <template match="self::db:msgexplan">%c</template>
+      <template match="self::db:msgmain">%c</template>
+      <template match="self::db:msgrel">%c</template>
+      <template match="self::db:msgset">%c</template>
+      <template match="self::db:msgsub">%c</template>
+      <template match="self::db:note">%c</template>
+      <template match="self::db:orderedlist">%c</template>
+      <template match="self::db:partintro">%c</template>
+      <template match="self::db:preface">%c</template>
+      <template match="self::db:procedure">{Procedure} %l%.%c</template>
+      <template match="self::db:productionset">%c</template>
+      <template match="self::db:productionset.formal">{ProductionSet} %l</template>
+      <template match="self::db:qandadiv">%c</template>
+      <template match="self::db:qandaentry">%c</template>
+      <template match="self::db:qandaset">%c</template>
+      <template match="self::db:question">%c</template>
+      <template match="self::db:refentry">%c</template>
+      <template match="self::db:reference">%c</template>
+      <template match="self::db:refsynopsisdiv">%c</template>
+      <template match="self::db:refsynopsisdivinfo">%c</template>
+      <template match="self::db:segmentedlist">%c</template>
+      <template match="self::db:set">%c</template>
+      <template match="self::db:setindex">%c</template>
+      <template match="self::db:sidebar">%c</template>
+      <template match="self::db:step">%c</template>
+      <template match="self::db:table">{Table} %l%.%c</template>
+      <template match="self::db:tip">%c</template>
+      <template match="self::db:toc">%c</template>
+      <template match="self::db:variablelist">%c</template>
+      <template match="self::db:varlistentry"/>
+      <template match="self::db:warning">%c</template>
+      <template match="self::db:formalgroup[db:equation]">{Equation} %l%.%c</template>
+      <template match="self::db:formalgroup[db:example]">{Example} %l%.%c</template>
+      <template match="self::db:formalgroup[db:figure]">{Figure} %l%.%c</template>
+      <template match="self::db:formalgroup[db:table]">{Table} %l%.%c</template>
+      <template match="true()">%l%.%c</template>
+   </group>
+   <group name="subfigure-title">
+      <template match="self::db:figure">{subfigure} %l%.%c</template>
+      <template match="self::db:table">{subtable} %l%.%c</template>
+      <template match="self::db:equation">{subequation} %l%.%c</template>
+      <template match="self::db:example">{subexample} %l%.%c</template>
+   </group>
+   <group name="title-generated">
+      <template match="self::db:abstract">{Abstract}</template>
+      <template match="self::db:acknowledgements">{Acknowledgements}</template>
+      <template match="self::db:bibliography">{Bibliography}</template>
+      <template match="self::db:caution">{Caution}</template>
+      <template match="self::db:danger">{Danger}</template>
+      <template match="self::db:dedication">{Dedication}</template>
+      <template match="self::db:glossary">{Glossary}</template>
+      <template match="self::db:important">{Important}</template>
+      <template match="self::db:index">{Index}</template>
+      <template match="self::db:legalnotice">{LegalNotice}</template>
+      <template match="self::db:note">{Note}</template>
+      <template match="self::db:revhistory">{RevHistory}</template>
+      <template match="self::db:setindex">{SetIndex}</template>
+      <template match="self::db:tip">{Tip}</template>
+      <template match="self::db:warning">{Warning}</template>
+   </group>
+   <group name="xref">
+      <template match="self::db:section[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:sect1[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:sect2[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:sect3[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:sect4[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:sect5[ancestor::db:preface]">{sectioncalled} %c</template>
+      <template match="self::db:danger">%c</template>
+      <template match="self::db:production">%c</template>
+      <template match="self::db:bibliolist">%c</template>
+      <template match="self::db:glosslist">%c</template>
+      <template match="self::db:abstract">%c</template>
+      <template match="self::db:answer">{Answer} %l</template>
+      <template match="self::db:appendix">%c</template>
+      <template match="self::db:article">%c</template>
+      <template match="self::db:authorblurb">%c</template>
+      <template match="self::db:bibliodiv">%c</template>
+      <template match="self::db:bibliography">%c</template>
+      <template match="self::db:bibliomset">%c</template>
+      <template match="self::db:biblioset">%c</template>
+      <template match="self::db:blockquote">%c</template>
+      <template match="self::db:book">%c</template>
+      <template match="self::db:calloutlist">%c</template>
+      <template match="self::db:caution">%c</template>
+      <template match="self::db:chapter">%c</template>
+      <template match="self::db:colophon">%c</template>
+      <template match="self::db:constraintdef">%c</template>
+      <template match="self::db:dedication">%c</template>
+      <template match="self::db:equation">%c</template>
+      <template match="self::db:example">%c</template>
+      <template match="self::db:figure">%c</template>
+      <template match="self::db:formalpara">%c</template>
+      <template match="self::db:glossary">%c</template>
+      <template match="self::db:glossdiv">%c</template>
+      <template match="self::db:important">%c</template>
+      <template match="self::db:index">%c</template>
+      <template match="self::db:indexdiv">%c</template>
+      <template match="self::db:itemizedlist">%c</template>
+      <template match="self::db:legalnotice">%c</template>
+      <template match="self::db:lot">%c</template>
+      <template match="self::db:msg">%c</template>
+      <template match="self::db:msgexplan">%c</template>
+      <template match="self::db:msgmain">%c</template>
+      <template match="self::db:msgrel">%c</template>
+      <template match="self::db:msgset">%c</template>
+      <template match="self::db:msgsub">%c</template>
+      <template match="self::db:note">%c</template>
+      <template match="self::db:orderedlist">%c</template>
+      <template match="self::db:part">%c</template>
+      <template match="self::db:partintro">%c</template>
+      <template match="self::db:preface">%c</template>
+      <template match="self::db:procedure">%c</template>
+      <template match="self::db:productionset">%c</template>
+      <template match="self::db:qandadiv">%c</template>
+      <template match="self::db:qandaentry">{Question} %l</template>
+      <template match="self::db:qandaset">%c</template>
+      <template match="self::db:question">{Question} %l</template>
+      <template match="self::db:reference">%c</template>
+      <template match="self::db:refsynopsisdiv">%c</template>
+      <template match="self::db:segmentedlist">%c</template>
+      <template match="self::db:set">%c</template>
+      <template match="self::db:setindex">%c</template>
+      <template match="self::db:sidebar">%c</template>
+      <template match="self::db:table">%c</template>
+      <template match="self::db:tip">%c</template>
+      <template match="self::db:toc">%c</template>
+      <template match="self::db:variablelist">%c</template>
+      <template match="self::db:warning">%c</template>
+      <template match="self::db:page.citation"> [%p]</template>
+      <template match="self::db:bridgehead">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsection">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsect1">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsect2">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsect3">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect1">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect2">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect3">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect4">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect5">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:section">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:simplesect">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:step">{step} %l</template>
+      <template match="self::db:refnamediv">%c</template>
+      <template match="true()">%l</template>
+   </group>
+   <group name="xref-number">
+      <template match="self::db:answer">{Answer} %l</template>
+      <template match="self::db:appendix">{Appendix} %l</template>
+      <template match="self::db:bridgehead">{Section} %l</template>
+      <template match="self::db:chapter">{Chapter} %l</template>
+      <template match="self::db:equation">{Equation} %l</template>
+      <template match="self::db:example">{Example} %l</template>
+      <template match="self::db:figure">{Figure} %l</template>
+      <template match="self::db:part">{Part} %l</template>
+      <template match="self::db:procedure">{Procedure} %l</template>
+      <template match="self::db:productionset">{ProductionSet} %l</template>
+      <template match="self::db:qandadiv">{Qandadiv} %l</template>
+      <template match="self::db:qandaentry">{Question} %l</template>
+      <template match="self::db:question">{Question} %l</template>
+      <template match="self::db:sect1">{Section} %l</template>
+      <template match="self::db:sect2">{Section} %l</template>
+      <template match="self::db:sect3">{Section} %l</template>
+      <template match="self::db:sect4">{Section} %l</template>
+      <template match="self::db:sect5">{Section} %l</template>
+      <template match="self::db:section">{Section} %l</template>
+      <template match="self::db:table">{Table} %l</template>
+   </group>
+   <group name="xref-number-and-title">
+      <template match="self::db:appendix">{Appendix} %l, %c</template>
+      <template match="self::db:bridgehead">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:chapter">{Chapter} %l, %c</template>
+      <template match="self::db:equation">{Equation} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:example">{Example} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:figure">{Figure} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:part">{Part} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:procedure">{Procedure} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:productionset">{ProductionSet} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:qandadiv">{Qandadiv} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:refsect1">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsect2">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsect3">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:refsection">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:sect1">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:sect2">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:sect3">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:sect4">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:sect5">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:section">{Section} %l, {startquote}%c{endquote}</template>
+      <template match="self::db:simplesect">{sectioncalled} {startquote}%c{endquote}</template>
+      <template match="self::db:table">{Table} %l, {startquote}%c{endquote}</template>
+      <template match="true()">%l%.%c</template>
+   </group>
+   <group name="see">
+      <template match="self::db:glosssee">{GlossSee} %c.</template>
+   </group>
+   <list name="index-seealso">
+      <items>({seealso} %c)</items>
+      <items>({seealso} %c<repeat>, %c</repeat>)</items>
+   </list>
+   <list name="index-seeie">
+      <items>({see} %c)</items>
+      <items>({see} %c<repeat>, %c</repeat>)</items>
+   </list>
+   <list name="index-seealsoie">
+      <items>({seealso} %c)</items>
+      <items>({seealso} %c<repeat>, %c</repeat>)</items>
+   </list>
+   <list name="glossary-seealso">
+      <items>{Seealso} %c.</items>
+      <items>{Seealso} %c<repeat>, %c</repeat>.</items>
+   </list>
+   <list name="varlistentry">
+      <items>%c</items>
+      <items>%c<repeat>, %c</repeat>
+      </items>
+   </list>
+   <list name="_default">
+      <items>%c</items>
+      <items>%c {and} %c</items>
+      <items>%c<repeat>, %c</repeat>, {and} %c</items>
+   </list>
+</locale>

@@ -25,7 +25,8 @@
 
 <xsl:template match="/">
   <!-- don't run document template from the coverage report -->
-  <xsl:apply-templates select="$test-reports/x:report[1]"/>
+  <xsl:message select="'Starting report for', count($test-reports/*/x:report), 'files'"/>
+  <xsl:apply-templates select="$test-reports/*/x:report[1]"/>
 </xsl:template>
 
 <!-- The assumption is that the input file is the XSpec test results. -->
@@ -72,7 +73,11 @@
         <xsl:call-template name="t:details"/>
       </div>
 
+      <xsl:message select="'Compute coverage…'"/>
+
       <xsl:call-template name="t:coverage"/>
+
+      <xsl:message select="'Results…'"/>
 
       <div id="hideresults"/>
       <table>
@@ -100,7 +105,9 @@
         </tfoot>
         <tbody>
           <xsl:for-each select="$test-reports//x:scenario/input-wrap/x:context[@href]">
-            <xsl:sort select="substring(../../@id, 9)" data-type="number"/>
+            <xsl:sort select="lower-case(tokenize(@href, '/')[last()])"/>
+
+            <!--<xsl:message select="'Test report:', position()"/>-->
 
             <xsl:variable name="id" select="../../@id/string()"/>
             <xsl:variable name="doc"
@@ -115,10 +122,17 @@
                                   then '/generated-xml/'
                                   else '/xml/'"/>
 
-            <xsl:variable name="file"
-                          select="substring-before(
-                                     substring-after(@href, $segment), '.xml')"/>
+            <!--<xsl:message select="'D:', $doc, 'S:', $segment"/>-->
+
+            <xsl:variable name="file" select="tokenize(@href, '/')[last()]
+                                              => substring-before('.xml')"/>
+
+            <!--<xsl:message select="'FILE:', $file"/>-->
+
             <xsl:variable name="key" select="../../@id || '-expect1'"/>
+            
+            <!--<xsl:message select="'KEY:', $key, count($key), count($test-reports)"/>-->
+
             <xsl:variable name="test" select="key('test', $key, $test-reports)"/>
             <tr class="{if ($test/@successful = 'true')
                         then 'pass'
@@ -163,10 +177,11 @@
 
 <xsl:template match="x:report" mode="m:results">
   <xsl:variable name="file"
-                select="(@xspec =&gt; substring-after('/build/xspec/')
-                                =&gt; substring-before('.xspec'))"/>
+                select="(tokenize(@xspec, '/')[last()]
+                         =&gt; substring-before('.xspec'))"/>
   <xsl:variable name="uri"
                 select="$file || '-result.html'"/>
+
   <xsl:variable name="pass" select="count(.//x:test[@successful = 'true'])"/>
   <xsl:variable name="pending" select="count(.//x:test[@pending])"/>
   <xsl:variable name="fail" select="(count(.//x:test) - $pending) - $pass"/>
@@ -181,14 +196,17 @@
 
 <xsl:template name="t:details">
   <xsl:variable name="gradle.properties"
-                select="unparsed-text('../gradle.properties')"/>
+                select="unparsed-text('../properties.gradle')"/>
   <xsl:variable name="properties"
                 select="f:parse-properties(tokenize($gradle.properties, '&#10;+'),
                                            map { })"/>
   <details>
     <ul>
-      <xsl:for-each select="$test-reports/x:report">
-        <li>
+      <xsl:for-each select="$test-reports/*/x:report">
+        <xsl:sort select="@xspec"/>
+        <li class="{if (.//x:test[not(@successful = 'true')])
+                    then 'fail'
+                    else 'pass'}">
           <xsl:apply-templates select="." mode="m:results"/>
         </li>
       </xsl:for-each>
@@ -345,7 +363,7 @@
   <xsl:variable name="car" select="$lines[1]"/>
   <xsl:variable name="cdr" select="subsequence($lines, 2)"/>
 
-  <xsl:variable name="propregex" select="'^\s*(\c+)=(.*)$'"/>
+  <xsl:variable name="propregex" select="'^\s*(\c+)\s*=\s*[''&quot;](.*)[''&quot;]$'"/>
 
   <xsl:choose>
     <xsl:when test="empty($lines)">

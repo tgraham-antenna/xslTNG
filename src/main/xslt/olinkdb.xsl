@@ -4,9 +4,10 @@
                 xmlns:m="http://docbook.org/ns/docbook/modes"
                 xmlns:t="http://docbook.org/ns/docbook/templates"
                 xmlns:tp="http://docbook.org/ns/docbook/templates/private"
+                xmlns:vp="http://docbook.org/ns/docbook/variables/private"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
-                exclude-result-prefixes="h m t tp xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
 <xsl:import href="docbook.xsl"/>
@@ -14,13 +15,15 @@
 <xsl:param name="output-base-uri" select="''"/>
 <xsl:param name="olink-targetdoc" as="xs:string" required="yes"/>
 
+<xsl:variable name="vp:olinkdb" select="true()"/>
+
 <xsl:output method="xml" encoding="utf-8" indent="no"/>
 
 <!-- ============================================================ -->
 
 <xsl:template match="/" priority="1000">
   <xsl:variable name="html">
-    <xsl:call-template name="tp:docbook"/>
+    <xsl:call-template name="t:docbook"/>
   </xsl:variable>
   <targetdb targetdoc="{$olink-targetdoc}">
     <xsl:apply-templates select="$html/*"/>
@@ -85,9 +88,7 @@
           <xsl:value-of select="@label/string()"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="." mode="m:headline-number">
-            <xsl:with-param name="purpose" select="'title'"/>
-          </xsl:apply-templates>
+          <xsl:sequence select="(h:header/*/@db-label)[1]/string()"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:attribute>

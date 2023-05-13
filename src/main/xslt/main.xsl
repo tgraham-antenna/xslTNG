@@ -13,20 +13,10 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:docbook"
-                exclude-result-prefixes="db f fp h m map mp t v vp xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
-<xsl:output method="xhtml" encoding="utf-8" indent="no" html-version="5"
-            omit-xml-declaration="yes"/>
-
-<xsl:key name="id" match="*" use="@xml:id"/>
-<xsl:key name="genid" match="*" use="generate-id(.)"/>
-<xsl:key name="targetptr" match="*" use="@targetptr"/>
-
-<xsl:param name="output-media" select="'screen'"/>
-
 <xsl:import href="param.xsl"/>
-<xsl:import href="parameter-maps.xsl"/>
 <xsl:import href="VERSION.xsl"/>
 <xsl:import href="modules/variable.xsl"/>
 <xsl:import href="modules/space.xsl"/>
@@ -34,15 +24,17 @@
 <xsl:import href="modules/errors.xsl"/>
 <xsl:import href="modules/head.xsl"/>
 <xsl:import href="modules/titles.xsl"/>
+<xsl:import href="modules/numbers.xsl"/>
 <xsl:import href="modules/units.xsl"/>
-<xsl:import href="modules/shared.xsl"/>
 <xsl:import href="modules/gentext.xsl"/>
+<xsl:import href="modules/l10n.xsl"/>
 <xsl:import href="modules/functions.xsl"/>
 <xsl:import href="modules/toc.xsl"/>
 <xsl:import href="modules/divisions.xsl"/>
 <xsl:import href="modules/components.xsl"/>
 <xsl:import href="modules/refentry.xsl"/>
 <xsl:import href="modules/bibliography.xsl"/>
+<xsl:import href="modules/biblio690.xsl"/>
 <xsl:import href="modules/glossary.xsl"/>
 <xsl:import href="modules/index.xsl"/>
 <xsl:import href="modules/sections.xsl"/>
@@ -66,16 +58,30 @@
 <xsl:import href="modules/attributes.xsl"/>
 <xsl:import href="modules/publishers.xsl"/>
 <xsl:import href="modules/annotations.xsl"/>
-<xsl:import href="modules/profile.xsl"/>
 <xsl:import href="modules/chunk.xsl"/>
 <xsl:import href="modules/chunk-cleanup.xsl"/>
 <xsl:import href="modules/chunk-output.xsl"/>
+<xsl:import href="modules/xform-locale.xsl"/>
+
+<xsl:output method="xhtml" encoding="utf-8" indent="no" html-version="5"
+            omit-xml-declaration="yes"/>
+
+<xsl:key name="targetptr" match="*" use="@targetptr"/>
+
+<xsl:param name="output-media" select="'screen'"/>
 
 <xsl:template match="/" mode="m:docbook">
   <xsl:document>
     <html>
       <xsl:attribute name="xml:base" select="base-uri(/*)"/>
       <xsl:apply-templates select="(/*/db:info,/*)[1]" mode="m:html-head"/>
+
+      <xsl:if test="f:is-true($persistent-toc)">
+        <div db-persistent-toc="true">
+          <xsl:apply-templates select="*" mode="m:persistent-toc"/>
+        </div>
+      </xsl:if>
+
       <!-- N.B. Any filename specified in a PI is ignored for the root -->
       <div db-chunk="{$chunk}"
            db-xlink="{f:xlink-style(/)}">
@@ -97,7 +103,7 @@
           <script type="text/html" class="annotation-close">
             <xsl:sequence select="$v:annotation-close"/>
           </script>
-          <script src="{$resource-base-uri}{$annotations-js}"/>
+          <script src="{$resource-base-uri}{$annotations-js}" defer="defer"/>
         </db-annotation-script>
         <db-xlink-script>
           <xsl:if test="$xlink-icon-open">
@@ -110,25 +116,42 @@
               <xsl:sequence select="$xlink-icon-closed"/>
             </script>
           </xsl:if>
-          <script src="{$resource-base-uri}{$xlink-js}"/>
+          <script src="{$resource-base-uri}{$xlink-js}" defer="defer"/>
         </db-xlink-script>
         <db-toc-script>
-          <script src="{$resource-base-uri}{$persistent-toc-js}"/>
+          <script src="{$resource-base-uri}{$persistent-toc-js}" defer="defer"/>
         </db-toc-script>
+        <db-pagetoc-script>
+          <script src="{$resource-base-uri}{$pagetoc-js}"
+                  data-dynamic-pagetoc="{f:is-true($pagetoc-dynamic)}"
+                  defer="defer"/>
+        </db-pagetoc-script>
         <db-mathml-script>
           <script src="{if (starts-with($mathml-js, 'http:')
                             or starts-with($mathml-js, 'https:'))
                         then $mathml-js
-                        else $resource-base-uri || $mathml-js}"/>
+                        else $resource-base-uri || $mathml-js}"
+                  defer="defer"/>
         </db-mathml-script>
         <db-script>
           <xsl:if test="exists($chunk) and f:is-true($chunk-nav)">
-            <script src="{$resource-base-uri}{$chunk-nav-js}"/>
+            <script src="{$resource-base-uri}{$chunk-nav-js}" defer="defer"/>
           </xsl:if>
           <xsl:if test="f:is-true($theme-picker) and $vp:js-controls">
-            <script src="{$resource-base-uri}{$control-js}"/>
+            <script src="{$resource-base-uri}{$control-js}" defer="defer"/>
           </xsl:if>
         </db-script>
+        <db-copy-verbatim-script>
+          <xsl:if test="normalize-space($copy-verbatim-js) != ''">
+            <script src="{$resource-base-uri}{$copy-verbatim-js}" defer="defer"/>
+          </xsl:if>
+        </db-copy-verbatim-script>
+        <db-fallback-script>
+          <!-- NOT deferred! -->
+          <xsl:if test="normalize-space($fallback-js) != ''">
+            <script src="{$resource-base-uri}{$fallback-js}"/>
+          </xsl:if>
+        </db-fallback-script>
       </xsl:if>
     </html>
   </xsl:document>

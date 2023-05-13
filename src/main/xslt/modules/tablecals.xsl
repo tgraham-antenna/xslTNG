@@ -12,32 +12,58 @@
                 xmlns:t="http://docbook.org/ns/docbook/templates"
                 xmlns:tp="http://docbook.org/ns/docbook/templates/private"
                 xmlns:v="http://docbook.org/ns/docbook/variables"
+                xmlns:vp="http://docbook.org/ns/docbook/variables/private"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:docbook"
-                exclude-result-prefixes="array db dbe f fcals fp m map mp t tp v xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
 <xsl:template match="db:table[db:tgroup]">
-  <figure>
+  <xsl:variable name="tp"
+                select="if (parent::db:formalgroup)
+                        then $v:formalgroup-nested-object-title-placement
+                        else $v:formal-object-title-placement"/>
+  <xsl:variable name="placement"
+                select="if (map:get($tp, local-name(.)))
+                        then map:get($tp, local-name(.))
+                        else map:get($tp, '_default')"/>
+  <div>
     <xsl:apply-templates select="." mode="m:attributes"/>
-    <xsl:apply-templates select="." mode="m:generate-titlepage"/>
-    <xsl:if test="'details' = $table-accessibility">
-      <xsl:apply-templates select="db:textobject[not(db:phrase)]" mode="m:details"/>
-    </xsl:if>
-    <xsl:apply-templates select="db:tgroup"/>
-    <xsl:if test=".//db:footnote">
-      <xsl:call-template name="t:table-footnotes">
-        <xsl:with-param name="footnotes" select=".//db:footnote"/>
-      </xsl:call-template>
-    </xsl:if>
-  </figure>
+
+    <xsl:choose>
+      <xsl:when test="$placement = 'before'">
+        <xsl:apply-templates select="." mode="m:generate-titlepage"/>
+        <xsl:if test="'details' = $vp:table-accessibility">
+          <xsl:apply-templates select="db:textobject[not(db:phrase)]" mode="m:details"/>
+        </xsl:if>
+        <xsl:apply-templates select="db:tgroup"/>
+        <xsl:if test=".//db:footnote">
+          <xsl:call-template name="t:table-footnotes">
+            <xsl:with-param name="footnotes" select=".//db:footnote"/>
+          </xsl:call-template>
+        </xsl:if>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="db:tgroup"/>
+        <xsl:if test=".//db:footnote">
+          <xsl:call-template name="t:table-footnotes">
+            <xsl:with-param name="footnotes" select=".//db:footnote"/>
+          </xsl:call-template>
+        </xsl:if>
+        <xsl:if test="'details' = $vp:table-accessibility">
+          <xsl:apply-templates select="db:textobject[not(db:phrase)]" mode="m:details"/>
+        </xsl:if>
+        <xsl:apply-templates select="." mode="m:generate-titlepage"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </div>
 </xsl:template>
 
 <xsl:template match="db:informaltable[db:tgroup]">
-  <figure>
+  <div>
     <xsl:apply-templates select="." mode="m:attributes"/>
-    <xsl:if test="'details' = $table-accessibility">
+    <xsl:if test="'details' = $vp:table-accessibility">
       <xsl:apply-templates select="db:textobject[not(db:phrase)]" mode="m:details"/>
     </xsl:if>
     <xsl:apply-templates select="db:tgroup"/>
@@ -46,12 +72,12 @@
         <xsl:with-param name="footnotes" select=".//db:footnote"/>
       </xsl:call-template>
     </xsl:if>
-  </figure>
+  </div>
 </xsl:template>
 
 <xsl:template match="db:tgroup">
   <table>
-    <xsl:if test="'summary' = $table-accessibility">
+    <xsl:if test="'summary' = $vp:table-accessibility">
       <xsl:apply-templates select="../db:textobject[db:phrase]" mode="m:details"/>
     </xsl:if>
     <xsl:if test="db:colspec[@colwidth]">

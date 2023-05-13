@@ -14,8 +14,9 @@
 
 <xsl:template match="db:refentry">
   <xsl:variable name="gi" select="if (parent::*)
-                                  then 'div'
+                                  then 'section'
                                   else 'article'"/>
+
   <xsl:element name="{$gi}" namespace="http://www.w3.org/1999/xhtml">
     <xsl:apply-templates select="." mode="m:attributes"/>
     <xsl:apply-templates select="." mode="m:generate-titlepage"/>
@@ -31,28 +32,35 @@
 
     <xsl:choose>
       <xsl:when test="$refentry-generate-name">
-        <h2>
-          <xsl:sequence
-              select="f:gentext(., 'label', 'refname')"/>
-        </h2>
+        <header>
+          <h2>
+            <xsl:apply-templates select="." mode="m:gentext">
+              <xsl:with-param name="group" select="'label'"/>
+              <xsl:with-param name="content" select="()"/>
+            </xsl:apply-templates>
+          </h2>
+        </header>
       </xsl:when>
 
       <xsl:when test="$refentry-generate-title">
-        <h2>
-          <xsl:choose>
-            <xsl:when test="../db:refmeta/db:refentrytitle">
-              <xsl:apply-templates select="../db:refmeta/db:refentrytitle"/>
-            </xsl:when>
-            <xsl:when test="db:refdescriptor">
-              <xsl:apply-templates select="db:refdescriptor"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:apply-templates select="db:refname[1]"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </h2>
+        <header>
+          <h2>
+            <xsl:choose>
+              <xsl:when test="../db:refmeta/db:refentrytitle">
+                <xsl:apply-templates select="../db:refmeta/db:refentrytitle"/>
+              </xsl:when>
+              <xsl:when test="db:refdescriptor">
+                <xsl:apply-templates select="db:refdescriptor"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:apply-templates select="db:refname[1]"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </h2>
+        </header>
       </xsl:when>
     </xsl:choose>
+
     <p>
       <xsl:choose>
         <xsl:when test="db:refdescriptor">
@@ -113,10 +121,7 @@
     <xsl:apply-templates/>
   </span>
   <xsl:if test="not($purpose = 'lot') and following-sibling::db:refname">
-    <span class="refname-sep">
-      <xsl:sequence
-          select="f:gentext(., 'separator', 'refname-sep')"/>
-    </span>
+    <span class="refname-sep">, </span>
   </xsl:if>
 </xsl:template>
 
@@ -131,10 +136,7 @@
         <xsl:apply-templates select="." mode="m:attributes"/>
       </xsl:otherwise>
     </xsl:choose>
-    <span class="refpurpose-sep">
-      <xsl:sequence
-          select="f:gentext(., 'separator', 'refpurpose-sep')"/>
-    </span>
+    <span class="refpurpose-sep"> — </span>
     <span class="refpurpose-text">
       <xsl:apply-templates/>
     </span>
@@ -148,30 +150,31 @@
 </xsl:template>
 
 <xsl:template match="db:refsynopsisdiv">
-  <div>
+  <section>
     <xsl:apply-templates select="." mode="m:attributes"/>
-
-    <h2>
-      <xsl:choose>
-        <xsl:when test="db:info/db:title">
-          <xsl:apply-templates select="db:info/db:title"
-                               mode="m:titlepage-mode"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>Synopsis</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </h2>
+    <header>
+      <h2>
+        <xsl:choose>
+          <xsl:when test="db:info/db:title">
+            <xsl:apply-templates select="db:info/db:title"
+                                 mode="m:titlepage-mode"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>Synopsis</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+      </h2>
+    </header>
     <xsl:apply-templates/>
-  </div>
+  </section>
 </xsl:template>
 
 <xsl:template match="db:refsection|db:refsect1|db:refsect2|db:refsect3">
-  <div>
+  <section>
     <xsl:apply-templates select="." mode="m:attributes"/>
     <xsl:apply-templates select="." mode="m:generate-titlepage"/>
     <xsl:apply-templates/>
-  </div>
+  </section>
 </xsl:template>
 
 </xsl:stylesheet>

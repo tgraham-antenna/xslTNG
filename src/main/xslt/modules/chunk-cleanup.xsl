@@ -9,15 +9,18 @@
                 xmlns:mp="http://docbook.org/ns/docbook/modes/private"
                 xmlns:t="http://docbook.org/ns/docbook/templates"
                 xmlns:v="http://docbook.org/ns/docbook/variables"
+                xmlns:vp="http://docbook.org/ns/docbook/variables/private"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:chunk-cleanup"
-                exclude-result-prefixes="db dbe f fp h m mp t v xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
 <xsl:key name="hid" match="*" use="@id"/>
 <xsl:key name="hfootnote" match="h:db-footnote" use="@id"/>
 <xsl:key name="hanno" match="h:db-annotation" use="@id"/>
+
+<xsl:mode name="m:chunk-cleanup" on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
   <xsl:param name="docbook" as="document-node()" tunnel="yes" required="yes"/>
@@ -28,7 +31,9 @@
 
 <xsl:template match="h:db-footnote|h:db-annotation|h:head
                      |h:db-annotation-script|h:db-xlink-script
-                     |h:db-toc-script|h:db-mathml-script|h:db-script">
+                     |h:db-toc-script|h:db-pagetoc-script|h:db-fallback-script
+                     |h:db-copy-verbatim-script
+                     |h:db-mathml-script|h:db-script">
   <!-- discard -->
 </xsl:template>
 
@@ -87,6 +92,73 @@
   <xsl:variable name="rbu" select="fp:root-base-uri(.)"/>
   <xsl:variable name="cbu" select="fp:chunk-output-filename(.)"/>
 
+  <xsl:variable name="classes" 
+                select="if (@db-chunk = '')
+                        then tokenize(*/@class)
+                        else tokenize(@class)"/>
+  <xsl:variable name="pagetoc"
+                select="$classes = $vp:pagetoc-elements"/>
+
+  <xsl:variable name="scripts" as="element(h:script)*">
+    <xsl:if test="exists(.//mml:*)"
+            xmlns:mml="http://www.w3.org/1998/Math/MathML">
+      <xsl:apply-templates select="/h:html/h:db-mathml-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <!-- We save the annotation-style on the root div -->
+    <xsl:if test="exists($annotations) and $annotation-style = 'javascript'">
+      <xsl:apply-templates select="/h:html/h:db-annotation-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <!-- We save the xlink-style on the root div -->
+    <xsl:if test="/h:html/h:div/@db-xlink/string() = 'javascript'">
+      <xsl:apply-templates select="/h:html/h:db-xlink-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <xsl:if test="f:is-true($persistent-toc)">
+      <xsl:apply-templates select="/h:html/h:db-toc-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <xsl:if test="$pagetoc">
+      <xsl:apply-templates select="/h:html/h:db-pagetoc-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <xsl:if test=".//h:video|.//h:audio">
+      <xsl:apply-templates select="/h:html/h:db-fallback-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <xsl:if test=".//h:div[contains-token(@class, 'pre-wrap')]">
+      <xsl:apply-templates select="/h:html/h:db-copy-verbatim-script/*">
+        <xsl:with-param name="rootbaseuri" select="$rbu"/>
+        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+      </xsl:apply-templates>
+    </xsl:if>
+
+    <!-- Unconditionally add h:db-script children. -->
+    <xsl:apply-templates select="/h:html/h:db-script/*">
+      <xsl:with-param name="rootbaseuri" select="$rbu"/>
+      <xsl:with-param name="chunkbaseuri" select="$cbu"/>
+    </xsl:apply-templates>
+  </xsl:variable>
+
   <!-- class=no-js is a hook for setting CSS styles when js isn't
        available; see the script element a few lines below. -->
   <html class="no-js" db-chunk="{fp:chunk-output-filename(.)}">
@@ -109,7 +181,8 @@
 
       <xsl:variable name="title" select="$head/h:title"/>
       <title>
-        <xsl:value-of select="f:chunk-title(.)"/>
+        <!-- because value-of introduces extra spaces -->
+        <xsl:sequence select="f:chunk-title(.) ! ./descendant-or-self::text()"/>
       </title>
 
       <xsl:apply-templates select="$head/node() except ($ctype|$title)">
@@ -117,13 +190,6 @@
         <xsl:with-param name="chunkbaseuri" select="$cbu"/>
       </xsl:apply-templates>
 
-      <xsl:if test="exists(.//mml:*)"
-              xmlns:mml="http://www.w3.org/1998/Math/MathML">
-        <xsl:apply-templates select="/h:html/h:db-mathml-script/*">
-          <xsl:with-param name="rootbaseuri" select="$rbu"/>
-          <xsl:with-param name="chunkbaseuri" select="$cbu"/>
-        </xsl:apply-templates>
-      </xsl:if>
       <xsl:if test="$prev">
         <link rel="prev" href="{fp:relative-link(., $prev)}"/>
       </xsl:if>
@@ -136,6 +202,8 @@
       <xsl:if test="$top">
         <link rel="home" href="{fp:relative-link(., $top)}"/>
       </xsl:if>
+
+      <xsl:sequence select="$scripts[not(@type) or contains(@type,'javascript')]"/>
     </head>
     <body>
       <xsl:variable name="class-list" as="xs:string*">
@@ -149,12 +217,12 @@
                        select="normalize-space(string-join($class-list, ' '))"/>
       </xsl:if>
       <nav class="top">
-        <xsl:if test="exists($chunk)
-                      and (empty(@db-navigation)
-                           or f:is-true(@db-navigation))
+        <xsl:if test="(empty(@db-navigation)
+                       or f:is-true(@db-navigation))
                       and (empty(@db-top-navigation)
                            or f:is-true(@db-top-navigation))">
           <xsl:call-template name="t:top-nav">
+            <xsl:with-param name="chunk" select="exists($chunk)"/>
             <xsl:with-param name="node" select="$self"/>
             <xsl:with-param name="prev" select="$prev"/>
             <xsl:with-param name="next" select="$next"/>
@@ -164,42 +232,62 @@
         </xsl:if>
       </nav>
 
-      <main>
-        <xsl:copy>
-          <xsl:apply-templates select="@*,node()"/>
-        </xsl:copy>
-      </main>
+      <xsl:variable name="main" as="element()">
+        <main>
+          <xsl:copy>
+            <xsl:apply-templates select="@*,node()">
+              <xsl:with-param name="rootbaseuri" select="$rbu" tunnel="yes"/>
+              <xsl:with-param name="chunkbaseuri" select="$cbu" tunnel="yes"/>
+            </xsl:apply-templates>
+          </xsl:copy>
 
-      <xsl:if test="$footnotes or exists($annotations)">
-        <footer>
-          <xsl:if test="$footnotes">
-            <xsl:call-template name="t:chunk-footnotes">
-              <xsl:with-param name="footnotes" select="$footnotes"/>
-            </xsl:call-template>
-          </xsl:if>
+          <xsl:if test="$footnotes or exists($annotations)">
+            <footer>
+              <xsl:if test="$footnotes">
+                <xsl:call-template name="t:chunk-footnotes">
+                  <xsl:with-param name="footnotes" select="$footnotes"/>
+                </xsl:call-template>
+              </xsl:if>
 
-          <xsl:if test="exists($annotations)">
-            <xsl:variable name="style"
-                          select="key('hanno', $annotations[1])[1]/@style/string()"/>
-            <div class="annotations">
-              <div class="annotation-wrapper title"
-                   >Annotations</div>
-              <xsl:for-each select="$annotations">
-                <xsl:apply-templates select="key('hanno', ., root($self))/node()"
-                                     mode="m:docbook"/>
-              </xsl:for-each>
-            </div>
+              <xsl:if test="exists($annotations)">
+                <xsl:variable name="style"
+                              select="key('hanno', $annotations[1])[1]/@style/string()"/>
+                <div class="annotations">
+                  <div class="annotation-wrapper title"
+                       >Annotations</div>
+                  <xsl:for-each select="$annotations">
+                    <xsl:apply-templates select="key('hanno', ., root($self))/node()"
+                                         mode="m:docbook"/>
+                  </xsl:for-each>
+                </div>
+              </xsl:if>
+            </footer>
           </xsl:if>
-        </footer>
-      </xsl:if>
+        </main>
+      </xsl:variable>
+
+      <xsl:choose>
+        <xsl:when test="$pagetoc">
+          <div class="pagebody">
+            <xsl:sequence select="$main"/>
+            <nav class="pagetoc">
+              <div class="tocwrapper">
+              </div>
+            </nav>
+          </div>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:sequence select="$main"/>
+        </xsl:otherwise>
+      </xsl:choose>
 
       <nav class="bottom">
-        <xsl:if test="exists($chunk)
-                      and (empty(@db-navigation)
-                           or f:is-true(@db-navigation))
+        <xsl:if test="(empty(@db-navigation)
+                       or f:is-true(@db-navigation))
                       and (empty(@db-bottom-navigation)
                            or f:is-true(@db-bottom-navigation))">
           <xsl:call-template name="t:bottom-nav">
+            <xsl:with-param name="chunk" select="exists($chunk)"/>
             <xsl:with-param name="node" select="$self"/>
             <xsl:with-param name="prev" select="$prev"/>
             <xsl:with-param name="next" select="$next"/>
@@ -209,35 +297,8 @@
         </xsl:if>
       </nav>
 
-      <!-- We save the annotation-style on the root div -->
-      <xsl:if test="exists($annotations) and $annotation-style = 'javascript'">
-        <xsl:apply-templates select="/h:html/h:db-annotation-script/*">
-          <xsl:with-param name="rootbaseuri" select="$rbu"/>
-          <xsl:with-param name="chunkbaseuri" select="$cbu"/>
-        </xsl:apply-templates>
-      </xsl:if>
-
-      <!-- We save the xlink-style on the root div -->
-      <xsl:if test="/h:html/h:div/@db-xlink/string() = 'javascript'">
-        <xsl:apply-templates select="/h:html/h:db-xlink-script/*">
-          <xsl:with-param name="rootbaseuri" select="$rbu"/>
-          <xsl:with-param name="chunkbaseuri" select="$cbu"/>
-        </xsl:apply-templates>
-      </xsl:if>
-
-      <xsl:if test="f:is-true($persistent-toc)">
-        <xsl:apply-templates select="/h:html/h:db-toc-script/*">
-          <xsl:with-param name="rootbaseuri" select="$rbu"/>
-          <xsl:with-param name="chunkbaseuri" select="$cbu"/>
-        </xsl:apply-templates>
-      </xsl:if>
-
-      <!-- Unconditionally add h:db-script children. -->
-      <xsl:apply-templates select="/h:html/h:db-script/*">
-        <xsl:with-param name="rootbaseuri" select="$rbu"/>
-        <xsl:with-param name="chunkbaseuri" select="$cbu"/>
-      </xsl:apply-templates>
-
+      <xsl:sequence select="$scripts[@type and not(contains(@type,'javascript'))]"/>
+      
       <xsl:apply-templates select="." mode="m:html-body-script">
         <xsl:with-param name="rootbaseuri" select="$rbu"/>
         <xsl:with-param name="chunkbaseuri" select="$cbu"/>
@@ -262,22 +323,26 @@
 
   <xsl:variable name="pchunk" select="$node/ancestor::*[@db-chunk][1]"/>
 
-  <xsl:choose>
-    <xsl:when test="exists($pchunk)">
-      <xsl:sequence
-          select="resolve-uri($node/@db-chunk,
-                              fp:chunk-output-filename($pchunk))"/>
-    </xsl:when>
-    <xsl:when test="not($v:chunk)">
-      <xsl:sequence select="base-uri(root($node)/*)"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:sequence
-          select="resolve-uri($node/@db-chunk,
-                              resolve-uri($chunk-output-base-uri,
-                                          base-uri(root($node)/*)))"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:variable name="fn" as="xs:anyURI">
+    <xsl:choose>
+      <xsl:when test="exists($pchunk)">
+        <xsl:sequence
+            select="resolve-uri($node/@db-chunk,
+                                fp:chunk-output-filename($pchunk))"/>
+      </xsl:when>
+      <xsl:when test="not($v:chunk)">
+        <xsl:sequence select="base-uri(root($node)/*)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence
+            select="resolve-uri($node/@db-chunk,
+                                $vp:chunk-output-base-uri)"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <!--<xsl:message select="'COF:', $fn"/>-->
+  <xsl:sequence select="$fn"/>
 </xsl:function>
 
 <xsl:template match="h:head/h:link[@href]">
@@ -316,8 +381,8 @@
 </xsl:template>
 
 <xsl:function name="fp:relative-uri" as="xs:string">
-  <xsl:param name="rootbaseuri" as="xs:anyURI" required="yes"/>
-  <xsl:param name="chunkbaseuri" as="xs:anyURI" required="yes"/>
+  <xsl:param name="rootbaseuri" as="xs:string" required="yes"/>
+  <xsl:param name="chunkbaseuri" as="xs:string" required="yes"/>
   <xsl:param name="href" as="xs:string" required="yes"/>
 
   <xsl:variable name="absuri"
@@ -361,17 +426,23 @@
   <xsl:if test="$target[1]/@db-chunk and count($target) != 1">
     <xsl:choose>
       <xsl:when test="count($target) = 0">
-        <xsl:message select="'Error: cannot find ' || $id || ' in document'"/>
+        <xsl:if test="$message-level gt 0">
+          <xsl:message select="'Error: cannot find ' || $id || ' in document'"/>
+        </xsl:if>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message select="'Error: multiple elements match ' || $id || ' in document'"/>
+        <xsl:if test="$message-level gt 0">
+          <xsl:message select="'Error: multiple elements match ' || $id || ' in document'"/>
+        </xsl:if>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:if>
 
   <xsl:choose>
     <xsl:when test="empty($target)">
-      <xsl:message select="'No id for #' || $id"/>
+      <xsl:if test="$message-level gt 0">
+        <xsl:message select="'No id for #' || $id"/>
+      </xsl:if>
       <span class="error broken-link">
         <xsl:copy>
           <xsl:apply-templates select="@*,node()"/>
@@ -398,6 +469,10 @@
         <xsl:apply-templates/>
       </a>
     </xsl:when>
+    <xsl:when test="ancestor::*[@db-persistent-toc]">
+      <!-- ignore it, we'll clean up the persistent ToC later -->
+      <xsl:sequence select="."/>
+    </xsl:when>
     <xsl:when test="$tchunk/@id = $id">
       <xsl:if test="'intra-chunk-refs' = $v:debug">
         <xsl:message select="'Link:', @href/string(),
@@ -419,6 +494,13 @@
       </a>
     </xsl:otherwise>
   </xsl:choose>
+</xsl:template>
+
+<xsl:template match="h:sup[@db-footnote]">
+  <xsl:copy>
+    <xsl:apply-templates select="@* except @db-footnote"/>
+    <xsl:apply-templates/>
+  </xsl:copy>
 </xsl:template>
 
 <!-- If we're renumbering footnotes and this is a text node in an h:a that's
@@ -447,6 +529,77 @@
     </xsl:choose>
   </xsl:variable>
   <xsl:sequence select="$renumber"/>
+</xsl:template>
+
+<xsl:template match="h:img/@src
+                     |h:video/h:source/@src
+                     |h:audio/h:source/@src
+                     |h:iframe/@src
+                     |h:audio//h:a/@href
+                     |h:video//h:a/@href
+                     |h:source/@srcset">
+  <xsl:param name="rootbaseuri" tunnel="yes"/>
+  <xsl:param name="chunkbaseuri" tunnel="yes"/>
+
+  <xsl:variable name="uri" as="xs:string">
+    <xsl:choose>
+      <xsl:when test="exists(f:uri-scheme(.)) and f:uri-scheme(.) != 'file'">
+        <xsl:sequence select="."/>
+      </xsl:when>
+      <xsl:when test="exists($mediaobject-output-base-uri)">
+        <xsl:choose>
+          <xsl:when test="f:is-true($mediaobject-output-paths)">
+            <xsl:sequence
+                select="fp:relative-uri($rootbaseuri, $chunkbaseuri, '')
+                        || $mediaobject-output-base-uri
+                        || ."/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:sequence
+                select="fp:relative-uri($rootbaseuri, $chunkbaseuri, '')
+                        || $mediaobject-output-base-uri
+                        || tokenize(., '/')[last()]"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:when test="true()">
+        <xsl:sequence
+            select="fp:relative-uri($rootbaseuri, $chunkbaseuri, '') || ."/>
+      </xsl:when>
+      <xsl:otherwise>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <xsl:variable name="adjusted-uri" as="xs:string">
+    <xsl:apply-templates select="." mode="m:mediaobject-output-adjust">
+      <xsl:with-param name="adjusted-uri" select="$uri"/>
+    </xsl:apply-templates>
+  </xsl:variable>
+
+  <xsl:message use-when="'mediaobject-uris' = $v:debug">
+    <xsl:text>Cleanup </xsl:text>
+    <xsl:value-of
+        select="substring(local-name((parent::h:img,
+                                      parent::h:iframe,
+                                      parent::h:a,
+                                      ../..)[1]), 1, 3)"/>
+    <xsl:choose>
+      <xsl:when test="$uri = $adjusted-uri">
+        <xsl:value-of select="': ' || . || ' &#9;→ ' || $adjusted-uri"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="': ' || . || ' &#9;→ ' || $uri || ' → &#9;' || $adjusted-uri"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:message>
+
+  <xsl:attribute name="{local-name(.)}" select="$adjusted-uri"/>
+</xsl:template>
+
+<xsl:template match="@*" mode="m:mediaobject-output-adjust">
+  <xsl:param name="adjusted-uri" as="xs:string"/>
+  <xsl:sequence select="$adjusted-uri"/>
 </xsl:template>
 
 <xsl:template match="element()">
@@ -556,8 +709,7 @@
       <xsl:sequence select="base-uri(root($node)/*)"/>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:sequence select="resolve-uri($chunk-output-base-uri,
-                                        base-uri(root($node)/*))"/>
+      <xsl:sequence select="$vp:chunk-output-base-uri"/>
     </xsl:otherwise>
   </xsl:choose>
 </xsl:function>
@@ -580,11 +732,12 @@
                                            |$chunk/*/h:header
                                            |$chunk/*/*/h:header)[1]"/>
 
-      <xsl:variable name="hx" select="($header/h:h1,
-                                       $header/h:h2,
-                                       $header/h:h3,
-                                       $header/h:h4,
-                                       $header/h:h5)[1]"/>
+      <xsl:variable name="hx" select="(($header//h:h1)[1],
+                                       ($header//h:h2)[1],
+                                       ($header//h:h3)[1],
+                                       ($header//h:h4)[1],
+                                       $header//h:h5)[1]"/>
+
       <xsl:apply-templates select="$hx/node()" mode="m:chunk-title"/>
     </xsl:otherwise>
   </xsl:choose>
@@ -610,70 +763,76 @@
 <!-- ============================================================ -->
 
 <xsl:template name="t:top-nav">
+  <xsl:param name="chunk" as="xs:boolean"/>
   <xsl:param name="node" as="element()"/>
   <xsl:param name="prev" as="element()?"/>
   <xsl:param name="next" as="element()?"/>
   <xsl:param name="up" as="element()?"/>
   <xsl:param name="top" as="element()?"/>
 
-  <div>
-    <xsl:if test="$top">
-      <a href="{fp:relative-link(., $top)}">Home</a>
-    </xsl:if>
-    <xsl:text> </xsl:text>
-    <xsl:if test="$up">
-      <a href="{fp:relative-link(., $up)}">Up</a>
-    </xsl:if>
-    <xsl:text> </xsl:text>
-    <xsl:if test="$next">
-      <a href="{fp:relative-link(., $next)}">Next</a>
-    </xsl:if>
-    <xsl:text> </xsl:text>
-    <xsl:if test="$prev">
-      <a href="{fp:relative-link(., $prev)}">Previous</a>
-    </xsl:if>
-  </div>
+  <xsl:if test="$chunk">
+    <div>
+      <xsl:if test="$top">
+        <a href="{fp:relative-link(., $top)}">Home</a>
+      </xsl:if>
+      <xsl:text> </xsl:text>
+      <xsl:if test="$up">
+        <a href="{fp:relative-link(., $up)}">Up</a>
+      </xsl:if>
+      <xsl:text> </xsl:text>
+      <xsl:if test="$next">
+        <a href="{fp:relative-link(., $next)}">Next</a>
+      </xsl:if>
+      <xsl:text> </xsl:text>
+      <xsl:if test="$prev">
+        <a href="{fp:relative-link(., $prev)}">Previous</a>
+      </xsl:if>
+    </div>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template name="t:bottom-nav">
+  <xsl:param name="chunk" as="xs:boolean"/>
   <xsl:param name="node" as="element()"/>
   <xsl:param name="prev" as="element()?"/>
   <xsl:param name="next" as="element()?"/>
   <xsl:param name="up" as="element()?"/>
   <xsl:param name="top" as="element()?"/>
 
-  <table width="100%">
-    <tr>
-      <td class="previous">
-        <xsl:if test="$prev">
-          <a href="{fp:relative-link(., $prev)}">Previous</a>
-        </xsl:if>
-      </td>
-      <td class="up">
-        <xsl:if test="$up">
-          <a href="{fp:relative-link(., $up)}">Up</a>
-        </xsl:if>
-      </td>
-      <td class="next">
-        <xsl:if test="$next">
-          <a href="{fp:relative-link(., $next)}">Next</a>
-        </xsl:if>
-      </td>
-    </tr>
-    <tr>
-      <td class="previous">
-        <xsl:sequence select="f:chunk-title($prev)"/>
-      </td>
-      <td class="up">
-        <xsl:if test="$top">
-          <a href="{fp:relative-link(., $top)}">Home</a>
-        </xsl:if>
-      </td>
-      <td class="next">
-        <xsl:sequence select="f:chunk-title($next)"/>
-      </td>
-    </tr>
-  </table>
+  <xsl:if test="$chunk">
+    <table>
+      <tr>
+        <td class="previous">
+          <xsl:if test="$prev">
+            <a href="{fp:relative-link(., $prev)}">Previous</a>
+          </xsl:if>
+        </td>
+        <td class="up">
+          <xsl:if test="$up">
+            <a href="{fp:relative-link(., $up)}">Up</a>
+          </xsl:if>
+        </td>
+        <td class="next">
+          <xsl:if test="$next">
+            <a href="{fp:relative-link(., $next)}">Next</a>
+          </xsl:if>
+        </td>
+      </tr>
+      <tr>
+        <td class="previous">
+          <xsl:sequence select="f:chunk-title($prev)"/>
+        </td>
+        <td class="up">
+          <xsl:if test="$top">
+            <a href="{fp:relative-link(., $top)}">Home</a>
+          </xsl:if>
+        </td>
+        <td class="next">
+          <xsl:sequence select="f:chunk-title($next)"/>
+        </td>
+      </tr>
+    </table>
+  </xsl:if>
 </xsl:template>
 
 <!-- ============================================================ -->
@@ -704,8 +863,10 @@
         <xsl:number format="1" from="db:table" level="any"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message>Error: failed to enumerate footnote:</xsl:message>
-        <xsl:message select="."/>
+        <xsl:if test="$message-level gt 0">
+          <xsl:message>Error: failed to enumerate footnote:</xsl:message>
+          <xsl:message select="."/>
+        </xsl:if>
         <xsl:sequence select="1"/>
       </xsl:otherwise>
     </xsl:choose>

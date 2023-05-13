@@ -40,7 +40,7 @@
   </xsl:if>
 </xsl:template>
 
-<xsl:template match="db:book|db:part|db:reference"
+<xsl:template match="db:set|db:book|db:part|db:reference"
               mode="m:attributes" as="attribute()*">
   <xsl:variable name="attr" select="fp:common-attributes(.)"/>
   <xsl:sequence
@@ -76,6 +76,11 @@
   </xsl:if>
 </xsl:template>
 
+<xsl:template match="db:refnamediv|db:refsynopsisdiv" mode="m:attributes" as="attribute()*">
+  <xsl:variable name="attr" select="fp:common-attributes(., true())"/>
+  <xsl:sequence select="f:attributes(., $attr)"/>
+</xsl:template>
+
 <xsl:template match="db:topic"
               mode="m:attributes" as="attribute()*">
   <xsl:variable name="attr" select="fp:common-attributes(.)"/>
@@ -85,6 +90,15 @@
     <xsl:attribute name="db-label" select="@label"/>
   </xsl:if>
 </xsl:template>
+
+<xsl:template match="db:procedure" mode="m:attributes" as="attribute()*">
+  <xsl:variable name="attr" select="fp:common-attributes(., true())"/>
+  <xsl:variable name="type" as="xs:string"
+                select="if (db:info/db:title)
+                        then 'formalobject'
+                        else 'informalobject'"/>
+  <xsl:sequence select="f:attributes(., $attr, (local-name(.), $type), ())"/>
+</xsl:template>  
 
 <xsl:template match="db:orderedlist" mode="m:attributes" as="attribute()*">
   <xsl:param name="exclude-classes" as="xs:string*"/>
@@ -332,6 +346,27 @@
   <xsl:sequence select="f:attributes(., $attr, (local-name(.), 'component'), ())"/>
 </xsl:template>
 
+<xsl:template match="db:biblioset"
+              mode="m:attributes" as="attribute()*">
+  <xsl:variable name="attr" select="fp:common-attributes(., false())"/>
+  <xsl:sequence select="f:attributes(., $attr, (local-name(.), @relation), ())"/>
+</xsl:template>
+
+<xsl:template match="db:biblioentry"
+              mode="m:attributes" as="attribute()*">
+  <xsl:param name="style" select="$bibliography-style"/>
+  <xsl:choose>
+    <xsl:when test="$style = 'iso690'">
+      <xsl:variable name="attr" select="fp:common-attributes(., false())"/>
+      <xsl:sequence select="f:attributes(., $attr, (local-name(.), 'iso690'), ())"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:variable name="attr" select="fp:common-attributes(., false())"/>
+      <xsl:sequence select="f:attributes(., $attr)"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
 <xsl:template match="db:qandaset|db:qandadiv|db:qandaentry|db:question|db:answer
                      |db:indexdiv|db:bibliodiv|db:glossdiv"
               mode="m:attributes" as="attribute()*">
@@ -342,6 +377,11 @@
 <xsl:template match="db:annotation" mode="m:attributes" as="attribute()*">
   <xsl:variable name="attr" select="fp:common-attributes(.)"/>
   <xsl:sequence select="f:attributes(., $attr, ('annotation-wrapper'), ())"/>
+</xsl:template>
+
+<xsl:template match="db:toc" mode="m:attributes" as="attribute()*">
+  <xsl:variable name="attr" select="fp:common-attributes(.)"/>
+  <xsl:sequence select="f:attributes(., $attr, ('list-of-titles'), ())"/>
 </xsl:template>
 
 <xsl:template match="*" mode="m:attributes" as="attribute()*">

@@ -1,5 +1,6 @@
 name: build-docbook
 on: push
+
 jobs:
   check_branch:
     runs-on: ubuntu-latest
@@ -36,6 +37,7 @@ jobs:
     needs: check_branch
     env:
       HAVE_ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN != '' }}
+      HAVE_GPGKEYURI: ${{ secrets.ACCESS_TOKEN != '' && secrets.GPGKEYURI != '' }}
       HAVE_SAXON_EE: ${{ secrets.SAXON_PASSPHRASE != '' }}
       CIWORKFLOW: yes
       CI_SHA1: ${{ github.sha }}
@@ -45,10 +47,39 @@ jobs:
       CI_BRANCH: ${{ needs.check_branch.outputs.branch }}
       CI_TAG: ${{ needs.check_branch.outputs.tag }}
     steps:
-      - name: Setup python dependencies
-        run: python3 -m pip install pygments==2.6.1 click
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install epubcheck rsync libxml2-dev libxslt-dev
 
-      - name: Checkout the branch
+      # lxml needed by html5-parser needs libxml2-dev and libxslt-dev, apparently
+      - name: Setup python dependencies
+        run: |
+          python3 -m pip install pygments==2.14.0 click cython
+          python3 -m pip install saxonche
+          python3 -m pip install --no-binary lxml html5-parser
+
+      - name: Download and install SASS
+        run: |
+          curl -o /tmp/dart.tar.gz -L https://github.com/sass/dart-sass/releases/download/1.56.0/dart-sass-1.56.0-linux-x64.tar.gz
+          cd /tmp && tar zxf dart.tar.gz && sudo mv dart-sass/sass /usr/local/bin
+
+      - name: Checkout the gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: 'gh-pages'
+
+      - name: Save EPUB and PDFs
+        run: tar cf - epub pdf | gzip > /tmp/save-epub-pdf.tar.gz
+
+      - name: Save the current version(s) of the guide
+        run: |
+          mkdir /tmp/guide
+          rsync -var guide/ /tmp/guide/
+          rm -f /tmp/guide/*.html /tmp/guide/validated.xml
+          cp guide/index.html /tmp
+
+      - name: Checkout the main branch
         uses: actions/checkout@v3
 
       - name: Setup SaxonEE
@@ -62,6 +93,16 @@ jobs:
       - name: Cleanup SaxonEE
         if: ${{ env.HAVE_SAXON_EE == 'true' }}
         run: rm -rf lib
+
+      - name: Restore EPUB and PDFs
+        run: cd build/website && tar zxf /tmp/save-epub-pdf.tar.gz
+
+      - name: Restore previous version(s) of the guide
+        run: |
+          rsync -var /tmp/guide/ build/website/guide/
+          if [ ! -f build/website/guide/index.html ]; then \
+            mv /tmp/index.html build/website/guide/; \
+          fi
 
       - name: Deploy main to gh-pages
         if: ${{ env.HAVE_ACCESS_TOKEN == 'true' && env.CI_BRANCH == 'main' }}
@@ -102,12 +143,25 @@ jobs:
           files: |
             build/distributions/docbook-xslTNG-${{ env.CI_TAG }}.zip
 
+      - name: Publish to Sonatype
+        if: ${{ env.HAVE_GPGKEYURI == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
+        run: |
+          curl -s -o secret.gpg ${{ secrets.GPGKEYURI }}
+          ./gradlew -PsonatypeUsername=${{ secrets.SONATYPEUSER }} \
+                  -PsonatypePassword="${{ secrets.SONATYPEPASS }}" \
+                  -Psigning.keyId="${{ secrets.SIGNKEY }}" \
+                  -Psigning.password="${{ secrets.SIGNPSW }}" \
+                  -Psigning.secretKeyRingFile=./secret.gpg \
+                  publish
+          rm -f secret.gpg
+
       - name: Checkout the CDN
         uses: actions/checkout@v3
         if: ${{ env.HAVE_ACCESS_TOKEN == 'true' && env.CI_BRANCH == 'main' && env.CI_TAG != '' }}
         with:
           repository: ${{ github.repository_owner}}/cdn
           token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
           ref: 'master'
 
       - name: Rebuild the CDN indexes

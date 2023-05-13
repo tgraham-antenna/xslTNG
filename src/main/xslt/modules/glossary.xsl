@@ -58,7 +58,9 @@
     <xsl:apply-templates/>
   </span>
   <xsl:if test="following-sibling::db:glossterm">
-    <xsl:sequence select="f:gentext(., 'separator', 'glossterm-sep')"/>
+    <xsl:apply-templates select="." mode="m:gentext">
+      <xsl:with-param name="group" select="'separator'"/>
+    </xsl:apply-templates>
   </xsl:if>
 </xsl:template>
 
@@ -69,7 +71,9 @@
   </span>
   <xsl:if test="following-sibling::db:acronym
                 |following-sibling::db:abbrev">
-    <xsl:sequence select="f:gentext(., 'separator', 'glossterm-sep')"/>
+    <xsl:apply-templates select="." mode="m:gentext">
+      <xsl:with-param name="group" select="'separator'"/>
+    </xsl:apply-templates>
   </xsl:if>
 </xsl:template>
 
@@ -80,7 +84,9 @@
   </span>
   <xsl:if test="following-sibling::db:acronym
                 |following-sibling::db:abbrev">
-    <xsl:sequence select="f:gentext(., 'separator', 'glossterm-sep')"/>
+    <xsl:apply-templates select="." mode="m:gentext">
+      <xsl:with-param name="group" select="'separator'"/>
+    </xsl:apply-templates>
   </xsl:if>
 </xsl:template>
 
@@ -92,29 +98,29 @@
   <dd>
     <xsl:apply-templates select="." mode="m:attributes"/>
     <p>
-      <xsl:apply-templates select="." mode="m:crossref-prefix">
-        <xsl:with-param name="label" select="''"/>
-        <xsl:with-param name="number" select="''"/>
-        <xsl:with-param name="title" select="string(.)"/>
+      <xsl:apply-templates select="." mode="m:gentext">
+        <xsl:with-param name="group" select="'see'"/>
+        <xsl:with-param name="content">
+          <xsl:choose>
+            <xsl:when test="$target">
+              <a href="{f:href(., $target)}">
+                <xsl:apply-templates/>
+              </a>
+            </xsl:when>
+            <xsl:when test="@otherterm and not($target)">
+              <xsl:message>
+                <xsl:text>Warning: </xsl:text>
+                <xsl:text>glosssee @otherterm reference not found: </xsl:text>
+                <xsl:value-of select="@otherterm"/>
+              </xsl:message>
+              <xsl:apply-templates/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:apply-templates/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:with-param>
       </xsl:apply-templates>
-      <xsl:choose>
-        <xsl:when test="$target">
-          <a href="{f:href(., $target)}">
-            <xsl:apply-templates/>
-          </a>
-        </xsl:when>
-        <xsl:when test="@otherterm and not($target)">
-          <xsl:message>
-            <xsl:text>Warning: </xsl:text>
-            <xsl:text>glosssee @otherterm reference not found: </xsl:text>
-            <xsl:value-of select="@otherterm"/>
-          </xsl:message>
-          <xsl:apply-templates/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates/>
-        </xsl:otherwise>
-      </xsl:choose>
       <xsl:text>.</xsl:text>
     </p>
   </dd>
@@ -132,44 +138,41 @@
 <xsl:template match="db:glossseealso">
   <dd>
     <p>
-      <xsl:apply-templates select="." mode="m:crossref-prefix">
-        <xsl:with-param name="label" select="''"/>
-        <xsl:with-param name="number" select="''"/>
-        <xsl:with-param name="title" select="string(.)"/>
-      </xsl:apply-templates>
-      <xsl:for-each select="(., following-sibling::db:glossseealso)">
-        <xsl:variable name="target"
-                      select="if (key('id', @otherterm))
-                              then key('id', @otherterm)[1]
-                              else key('glossterm', string(.))"/>
-        <xsl:choose>
-          <xsl:when test="$target">
-            <a href="{f:href(/,$target)}">
-              <xsl:apply-templates select="$target" mode="m:crossref"/>
-            </a>
-          </xsl:when>
-          <xsl:when test="@otherterm and not($target)">
-            <xsl:message>
-              <xsl:text>Warning: </xsl:text>
-              <xsl:text>glossseealso @otherterm reference not found: </xsl:text>
-              <xsl:value-of select="@otherterm"/>
-            </xsl:message>
-            <xsl:apply-templates/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:apply-templates/>
-          </xsl:otherwise>
-        </xsl:choose>
+      <xsl:variable name="targets" as="element()+">
+        <xsl:for-each select="(., following-sibling::db:glossseealso)">
+          <xsl:variable name="target"
+                        select="if (key('id', @otherterm))
+                                then key('id', @otherterm)[1]
+                                else key('glossterm', string(.))"/>
+          <xsl:choose>
+            <xsl:when test="$target">
+              <a href="{f:href(/,$target)}">
+                <xsl:apply-templates select="$target" mode="m:crossref"/>
+              </a>
+            </xsl:when>
+            <xsl:when test="@otherterm and not($target)">
+              <xsl:message>
+                <xsl:text>Warning: </xsl:text>
+                <xsl:text>glossseealso @otherterm reference not found: </xsl:text>
+                <xsl:value-of select="@otherterm"/>
+              </xsl:message>
+              <span>
+                <xsl:apply-templates/>
+              </span>
+            </xsl:when>
+            <xsl:otherwise>
+              <span>
+                <xsl:apply-templates/>
+              </span>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:for-each>
+      </xsl:variable>
 
-        <xsl:choose>
-          <xsl:when test="position() = last()">
-            <xsl:text>.</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>, </xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
+      <xsl:apply-templates select="." mode="m:gentext-list">
+        <xsl:with-param name="list" select="$targets"/>
+        <xsl:with-param name="name" select="'glossary-seealso'"/>
+      </xsl:apply-templates>
     </p>
   </dd>
 </xsl:template>

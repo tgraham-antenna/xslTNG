@@ -16,7 +16,8 @@
                 exclude-result-prefixes="array db f fp l m map mp v vp xs"
                 version="3.0">
 
-<xsl:variable name="fp:class" select="QName('', 'class')"/>
+<xsl:key name="id" match="*" use="@xml:id"/>
+<xsl:key name="genid" match="*" use="generate-id(.)"/>
 
 <xsl:function name="f:attributes" as="attribute()*">
   <xsl:param name="node" as="element()"/>
@@ -58,7 +59,7 @@
   </xsl:for-each>
 
   <!-- if there isn't a class attribute, manufacture one -->
-  <xsl:if test="not($fp:class = $attributes/node-name())">
+  <xsl:if test="not(QName('', 'class') = $attributes/node-name())">
     <xsl:variable name="roles"
                   select="(tokenize(normalize-space(string-join($extra-classes, ' '))),
                            tokenize(normalize-space($node/@role)),
@@ -83,7 +84,7 @@
   </xsl:if>
 </xsl:function>
 
-<xsl:function name="f:is-true" as="xs:boolean">
+<xsl:function name="f:is-true" as="xs:boolean" visibility="public">
   <xsl:param name="value"/>
 
   <xsl:choose>
@@ -135,17 +136,20 @@
   </xsl:choose>
 </xsl:function>
 
-<xsl:function name="f:l10n-language" as="xs:string">
+<xsl:function name="f:l10n-language" as="xs:string" cache="yes">
   <xsl:param name="target" as="element()"/>
 
-  <xsl:variable name="mc-language" as="xs:string"
-                select="($gentext-language,
-                        $target/ancestor-or-self::*[@xml:lang][1]/@xml:lang,
-                        $default-language)[1]"/>
+  <xsl:variable name="nearest-lang"
+                select="$target/ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
 
-  <xsl:variable name="language" select="translate($mc-language,
-                                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                                        'abcdefghijklmnopqrstuvwxyz')"/>
+  <xsl:variable name="mc-language" as="xs:string"
+                select="if (exists($gentext-language))
+                        then $gentext-language
+                        else if (exists($nearest-lang) and $nearest-lang = '')
+                             then $default-language
+                             else ($nearest-lang, $default-language)[1]"/>
+
+  <xsl:variable name="language" select="lower-case($mc-language)"/>
 
   <xsl:variable name="adjusted-language"
                 select="if (contains($language, '-'))
@@ -154,11 +158,14 @@
                         else $language"/>
 
   <xsl:choose>
-    <xsl:when test="fp:localization($target, $adjusted-language, false())">
+    <xsl:when test="doc-available(
+                      resolve-uri($adjusted-language||'.xml', $v:localization-base-uri))">
       <xsl:sequence select="$adjusted-language"/>
     </xsl:when>
     <!-- try just the lang code without country -->
-    <xsl:when test="fp:localization($target, substring-before($adjusted-language,'_'), false())">
+    <xsl:when test="doc-available(
+                      resolve-uri(
+                        substring-before($adjusted-language, '_')||'.xml', $v:localization-base-uri))">
       <xsl:sequence select="substring-before($adjusted-language,'_')"/>
     </xsl:when>
     <!-- or use the default -->
@@ -177,13 +184,6 @@
   </xsl:choose>
 </xsl:function>
 
-<xsl:function name="f:check-gentext" as="item()*">
-  <xsl:param name="node" as="element()"/>
-  <xsl:param name="context" as="xs:string"/>
-  <xsl:param name="key" as="xs:string"/>
-  <xsl:sequence select="fp:gentext($node, $context, $key, false())"/>
-</xsl:function>
-
 <xsl:function name="f:gentext-letters" as="element(l:letters)">
   <xsl:param name="node" as="element()"/>
   <xsl:sequence select="f:gentext-letters-for-language($node)"/>
@@ -192,10 +192,8 @@
 <xsl:function name="f:gentext-letters-for-language" as="element(l:letters)">
   <xsl:param name="node" as="element()"/>
 
-  <xsl:variable name="lang" select="f:language($node)"/>
-
-  <xsl:variable name="l10n"
-                select="fp:existing-localization($node)"/>
+  <xsl:variable name="lang" select="f:l10n-language($node)"/>
+  <xsl:variable name="l10n" select="fp:localization($lang)"/>
 
   <xsl:variable name="letters"
                 select="$l10n/l:letters"/>
@@ -274,21 +272,6 @@
       <xsl:sequence select="'apply-templates'"/>
     </xsl:otherwise>
   </xsl:choose>
-</xsl:function>
-
-<!-- ============================================================ -->
-
-<xsl:function name="f:post-label-punctuation" as="xs:string?">
-  <xsl:param name="node" as="element()"/>
-  <xsl:sequence select="f:post-label-punctuation($node, ())"/>
-</xsl:function>
-
-<xsl:function name="f:post-label-punctuation" as="xs:string?">
-  <xsl:param name="node" as="element()"/>
-  <xsl:param name="context" as="xs:string?"/>
-  <xsl:sequence select="if ($context = 'xref')
-                        then ()
-                        else '.'"/>
 </xsl:function>
 
 <!-- ============================================================ -->
@@ -374,15 +357,21 @@
 
 <xsl:function name="f:generate-id" as="xs:string" cache="yes">
   <xsl:param name="node" as="element()"/>
+  <xsl:sequence select="f:generate-id($node, true())"/>
+</xsl:function>
+
+<xsl:function name="f:generate-id" as="xs:string" cache="yes">
+  <xsl:param name="node" as="element()"/>
+  <xsl:param name="use-xml-id" as="xs:boolean"/>
   <xsl:choose>
-    <xsl:when test="$node/@xml:id">
-      <xsl:sequence select="string($node/@xml:id)"/>
+    <xsl:when test="$use-xml-id and $node/@xml:id">
+      <xsl:sequence select="$node/@xml:id/string()"/>
     </xsl:when>
     <xsl:when test="empty($node/parent::*)">
       <xsl:sequence select="$generated-id-root"/>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:variable name="aid" select="f:generate-id($node/parent::*)"/>
+      <xsl:variable name="aid" select="f:generate-id($node/parent::*, $use-xml-id)"/>
       <xsl:variable name="type" select="(map:get($vp:gidmap, local-name($node)),
                                          local-name($node))[1]"/>
       <xsl:variable name="prec"
@@ -396,17 +385,22 @@
 <xsl:function name="f:id" as="xs:string" cache="yes">
   <xsl:param name="node" as="element()"/>
   <xsl:sequence select="if ($node/@xml:id)
-                        then $node/@xml:id
+                        then $node/@xml:id/string()
                         else f:generate-id($node)"/>
 </xsl:function>
 
-<xsl:function name="f:pi" as="xs:string?">
+<xsl:function name="f:unique-id" as="xs:string" cache="yes">
+  <xsl:param name="node" as="element()"/>
+  <xsl:sequence select="f:generate-id($node, false())"/>
+</xsl:function>
+
+<xsl:function name="f:pi" as="xs:string?" visibility="public">
   <xsl:param name="context" as="node()?"/>
   <xsl:param name="property" as="xs:string"/>
   <xsl:sequence select="f:pi($context, $property, ())"/>
 </xsl:function>
 
-<xsl:function name="f:pi" as="xs:string*">
+<xsl:function name="f:pi" as="xs:string*" visibility="public">
   <xsl:param name="context" as="node()?"/>
   <xsl:param name="property" as="xs:string"/>
   <xsl:param name="default" as="xs:string*"/>
@@ -534,37 +528,13 @@
 
 <xsl:function name="fp:separator" as="node()*">
   <xsl:param name="node" as="element()"/>
-  <xsl:param name="context" as="xs:string"/>
-  <xsl:choose>
-    <xsl:when test="f:check-gentext($node, $context, local-name($node))">
-      <xsl:sequence
-          select="f:gentext($node, $context, local-name($node))"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:sequence
-          select="f:gentext($node, $context, '_default')"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:param name="key" as="xs:string"/>
+  <xsl:sequence select="fp:localization-template($node, 'separator')"/>
 </xsl:function>
 
 <xsl:function name="f:label-separator" as="node()*">
   <xsl:param name="node" as="element()"/>
   <xsl:sequence select="fp:separator($node, 'label-separator')"/>
-</xsl:function>
-
-<xsl:function name="f:number-separator" as="node()*">
-  <xsl:param name="node" as="element()"/>
-  <xsl:sequence select="fp:separator($node, 'number-separator')"/>
-</xsl:function>
-
-<xsl:function name="f:intra-number-separator" as="node()*">
-  <xsl:param name="node" as="element()"/>
-  <xsl:sequence select="fp:separator($node, 'intra-number-separator')"/>
-</xsl:function>
-
-<xsl:function name="fp:label-format" as="node()*">
-  <xsl:param name="node" as="element()"/>
-  <xsl:sequence select="fp:separator($node, 'label-format')"/>
 </xsl:function>
 
 <xsl:function name="fp:parse-key-value-pairs" as="map(xs:string,xs:string)">
@@ -710,16 +680,42 @@
 
 <xsl:function name="f:orderedlist-item-numeration" as="xs:string">
   <xsl:param name="node" as="element(db:listitem)"/>
-  <xsl:variable name="depth"
-                select="count(f:orderedlist-item-number($node))"/>
-  <xsl:variable name="depth"
-                select="$depth
-                        mod string-length($orderedlist-item-numeration)"/>
-  <xsl:variable name="depth"
-                select="if ($depth eq 0)
-                        then string-length($orderedlist-item-numeration)
-                        else $depth"/>
-  <xsl:sequence select="substring($orderedlist-item-numeration, $depth, 1)"/>
+
+  <xsl:variable name="numeration" select="$node/parent::db:orderedlist/@numeration"/>
+
+  <xsl:choose>
+    <xsl:when test="exists($numeration)">
+      <xsl:choose>
+        <xsl:when test="$numeration = 'upperalpha'">
+          <xsl:sequence select="'A'"/>
+        </xsl:when>
+        <xsl:when test="$numeration = 'loweralpha'">
+          <xsl:sequence select="'a'"/>
+        </xsl:when>
+        <xsl:when test="$numeration = 'upperroman'">
+          <xsl:sequence select="'I'"/>
+        </xsl:when>
+        <xsl:when test="$numeration = 'lowerroman'">
+          <xsl:sequence select="'i'"/>
+        </xsl:when>
+        <xsl:otherwise> <!-- arabic -->
+          <xsl:sequence select="'1'"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:variable name="depth"
+                    select="count(f:orderedlist-item-number($node))"/>
+      <xsl:variable name="depth"
+                    select="$depth
+                            mod string-length($orderedlist-item-numeration)"/>
+      <xsl:variable name="depth"
+                    select="if ($depth eq 0)
+                            then string-length($orderedlist-item-numeration)
+                            else $depth"/>
+      <xsl:sequence select="substring($orderedlist-item-numeration, $depth, 1)"/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:function>
 
 <xsl:function name="f:tokenize-on-char" as="xs:string*">
@@ -734,6 +730,72 @@
                         else $ch"/>
 
   <xsl:sequence select="tokenize($string, $tchar)"/>
+</xsl:function>
+
+<xsl:function name="f:uri-scheme" as="xs:string?">
+  <xsl:param name="uri" as="xs:string"/>
+
+  <xsl:if test="matches($uri, '^[-a-zA-Z0-9]+:')">
+    <xsl:sequence select="replace($uri, '^([-a-zA-Z0-9]+):.*$', '$1')"/>
+  </xsl:if>
+</xsl:function>
+
+<xsl:function name="f:relative-path" as="xs:string">
+  <xsl:param name="base" as="xs:string"/>
+  <xsl:param name="path" as="xs:string"/>
+
+  <xsl:choose>
+    <xsl:when test="exists(f:uri-scheme($path)) and f:uri-scheme($path) ne 'file'">
+      <!-- It starts with a non-file: scheme, just assume it's absolute. -->
+      <xsl:sequence select="$path"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:variable name="base-parts" select="tokenize($base, '/')[position() lt last()]"/>
+      <xsl:variable name="path-parts" select="tokenize($path, '/')"/>
+
+      <!--
+          <xsl:message select="'BP:', $base-parts"/>
+          <xsl:message select="'PP:', $path-parts"/>
+      -->
+
+      <xsl:variable name="common-prefix" as="xs:string*">
+        <xsl:iterate select="$base-parts">
+          <xsl:param name="pos" select="1"/>
+          <xsl:param name="common" select="()"/>
+          <xsl:on-completion select="$common"/>
+          <xsl:if test="$base-parts[$pos] = $path-parts[$pos]">
+            <xsl:next-iteration>
+              <xsl:with-param name="pos" select="$pos + 1"/>
+              <xsl:with-param name="common" select="($common, $base-parts[$pos])"/>
+            </xsl:next-iteration>
+          </xsl:if>
+        </xsl:iterate>
+      </xsl:variable>
+
+      <!--
+          <xsl:message select="'CP:', $common-prefix"/>
+      -->
+
+      <xsl:variable name="base-tail"
+                    select="$base-parts[position() gt count($common-prefix)]"/>
+      <xsl:variable name="path-tail"
+                    select="$path-parts[position() gt count($common-prefix)]"/>
+
+      <!--
+          <xsl:message select="'BT:', $base-tail"/>
+          <xsl:message select="'PT:', $path-tail"/>
+      -->
+
+      <xsl:variable name="final-parts" as="xs:string*">
+        <xsl:for-each select="1 to count($base-tail)">
+          <xsl:sequence select="'..'"/>
+        </xsl:for-each>
+        <xsl:sequence select="$path-tail"/>
+      </xsl:variable>
+
+      <xsl:sequence select="string-join($final-parts, '/')"/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:function>
 
 </xsl:stylesheet>

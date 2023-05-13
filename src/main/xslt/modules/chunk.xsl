@@ -9,10 +9,11 @@
                 xmlns:mp="http://docbook.org/ns/docbook/modes/private"
                 xmlns:t="http://docbook.org/ns/docbook/templates"
                 xmlns:v="http://docbook.org/ns/docbook/variables"
+                xmlns:vp="http://docbook.org/ns/docbook/variables/private"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:docbook"
-                exclude-result-prefixes="db dbe f fp h m mp t v xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
 <xsl:function name="f:chunk" as="attribute()*">
@@ -106,19 +107,32 @@
 <xsl:function name="f:chunk-filename" as="xs:string">
   <xsl:param name="node" as="element()"/>
 
+  <xsl:variable name="pi-filename" as="xs:string?">
+    <xsl:choose>
+      <xsl:when test="f:pi($node, 'filename')">
+        <xsl:sequence select="f:pi($node, 'filename')"/>
+      </xsl:when>
+      <xsl:when test="f:pi($node/db:info, 'filename')">
+        <xsl:sequence select="f:pi($node/db:info, 'filename')"/>
+      </xsl:when>
+      <!-- href is commonly used instead of filename -->
+      <xsl:when test="f:pi($node, 'href')">
+        <xsl:sequence select="f:pi($node, 'href')"/>
+      </xsl:when>
+      <xsl:when test="f:pi($node/db:info, 'href')">
+        <xsl:sequence select="f:pi($node/db:info, 'href')"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="()"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:choose>
-    <xsl:when test="f:pi($node, 'filename')">
-      <xsl:sequence select="f:pi($node, 'filename')"/>
-    </xsl:when>
-    <xsl:when test="f:pi($node/db:info, 'filename')">
-      <xsl:sequence select="f:pi($node/db:info, 'filename')"/>
-    </xsl:when>
-    <!-- href is commonly used instead of filename -->
-    <xsl:when test="f:pi($node, 'href')">
-      <xsl:sequence select="f:pi($node, 'href')"/>
-    </xsl:when>
-    <xsl:when test="f:pi($node/db:info, 'href')">
-      <xsl:sequence select="f:pi($node/db:info, 'href')"/>
+    <xsl:when test="exists($pi-filename)">
+      <xsl:sequence select="if (contains($pi-filename, '.'))
+                            then $pi-filename
+                            else $pi-filename || $html-extension"/>
     </xsl:when>
     <xsl:when test="f:pi($node, 'basename')">
       <xsl:sequence select="f:pi($node, 'basename') || $html-extension"/>
@@ -194,7 +208,7 @@
 
 <xsl:function name="fp:root-base-uri" as="xs:anyURI" cache="yes">
   <xsl:param name="node" as="element()"/>
-  <xsl:sequence select="resolve-uri($chunk-output-base-uri, base-uri(root($node)/*))"/>
+  <xsl:sequence select="$vp:chunk-output-base-uri"/>
 </xsl:function>
 
 <!-- ============================================================ -->

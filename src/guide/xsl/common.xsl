@@ -48,27 +48,16 @@
                     'self::*[ancestor::db:partintro]',
                     'self::db:section')"/>
 
-<xsl:param name="component-numbers-inherit" select="true()"/>
+<xsl:param name="sections-inherit-from" select="'component section'"/>
 
 <xsl:param name="section-toc-depth" select="1"/>
 <xsl:param name="footnote-numeration" select="('*', '**', '†','‡', '§', '1')"/>
 
-<xsl:variable name="v:user-title-properties" as="element()*">
-  <title xpath="self::db:chapter"
-         number-format="1"
-         label="false"
-         inherit="{$division-numbers-inherit}"/>
-
-  <title xpath="self::db:appendix"
-         number-format="A"
-         label="false"
-         inherit="{$division-numbers-inherit}"/>
-</xsl:variable>
-
 <!-- ============================================================ -->
 
 <xsl:key name="sections" match="db:section" use="db:info/db:biblioid"/>
-<xsl:key name="refentry" match="db:refentry" use="db:refmeta/db:refmiscinfo"/>
+<xsl:key name="refentry" match="db:refentry"
+         use="db:refmeta/db:refmiscinfo[not(@class)]"/>
 
 <xsl:key name="modes" match="a:template" use="@mode"/>
 <xsl:key name="functions" match="a:function" use="@name"/>
@@ -111,7 +100,7 @@
             <xsl:apply-templates select="db:info/db:revhistory"/>
           </xsl:if>
           <p class="copyright">
-            <a href="copyright.html">Copyright</a>
+            <a href="copyright{$html-extension}">Copyright</a>
             <xsl:text> &#xA9; </xsl:text>
             <xsl:value-of select="/db:book/db:info/db:copyright/db:year[1]"/>
             <xsl:if test="/db:book/db:info/db:copyright/db:year[2]">
@@ -137,156 +126,184 @@
 <!-- ============================================================ -->
 
 <xsl:template match="db:refnamediv">
-  <xsl:for-each select="../db:refmeta/db:refmiscinfo">
+  <xsl:for-each select="../db:refmeta/db:refmiscinfo[not(@class)]">
     <div id="{../../db:refnamediv/db:refclass}-{fg:checksum(.)}"/>
   </xsl:for-each>
 
   <xsl:next-match/>
 
-  <xsl:call-template name="tg:detail"/>
+  <xsl:variable name="obsolete"
+                select="../db:refmeta/db:refmiscinfo[@otherclass='obsolete']"/>
 
-  <xsl:variable name="objects"
-                select="key('a-by-name', ../db:refmeta/db:refmiscinfo, $explorer)"/>
+  <xsl:choose>
+    <xsl:when test="empty($obsolete)">
+      <xsl:call-template name="tg:detail"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:if test="db:refclass = 'mode'">
+        <p>
+          <xsl:text>Obsolete as of version </xsl:text>
+          <xsl:apply-templates select="$obsolete/node()"/>
+          <xsl:text>.</xsl:text>
+        </p>
+      </xsl:if>
+    </xsl:otherwise>
+  </xsl:choose>
 
-  <xsl:if test="db:refclass = 'function' and $objects/self::a:function">
-    <xsl:variable name="synopsis">
-      <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
-        <xsl:for-each select="$objects/self::a:function">
-          <funcsynopsis>
-            <funcprototype>
-              <funcdef>
-                <function>
-                  <xsl:sequence select="substring-before(@display-name, '#')"/>
-                </function>
-                <xsl:if test="@as">
-                  <type>
-                    <xsl:sequence select="@as/string()"/>
-                  </type>
-                </xsl:if>
-              </funcdef>
-              <xsl:choose>
-                <xsl:when test="a:param">
-                  <xsl:for-each select="a:param">
-                    <paramdef>
-                      <parameter>
-                        <xsl:value-of select="@name/string()"/>
-                      </parameter>
-                      <xsl:if test="@as">
-                        <type>
-                          <xsl:value-of select="@as/string()"/>
-                        </type>
-                      </xsl:if>
-                    </paramdef>
-                  </xsl:for-each>
-                </xsl:when>
-                <xsl:otherwise>
-                  <void/>
-                </xsl:otherwise>
-              </xsl:choose>
-            </funcprototype>
-          </funcsynopsis>
-        </xsl:for-each>
-      </refsynopsisdiv>
-    </xsl:variable>
-    <xsl:apply-templates select="$synopsis/node()"/>
-  </xsl:if>
+  <xsl:variable
+      name="objects"
+      select="key('a-by-name', ../db:refmeta/db:refmiscinfo[not(@class)], $explorer)"/>
 
-  <xsl:if test="(db:refclass = 'variable' or db:refclass = 'param')
-                and $objects/self::a:variable">
-    <xsl:variable name="synopsis">
-      <xsl:variable name="initializer"
-                    select="empty(db:refclass[contains-token(@role, 'noinitializer')])"/>
-      <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
-        <xsl:for-each select="$objects/self::a:variable">
-          <xsl:variable name="dname"
-                        select="@display-name/string()"/>
-          <xsl:variable name="decl"
-                        select="$param_xsl//xsl:param[@name=$dname]
-                                |$param_xsl//xsl:variable[@name=$dname]"/>
+  <xsl:choose>
+    <xsl:when test="exists($obsolete) and empty($objects)"/>
+    <xsl:when test="db:refclass = 'function' and $objects/self::a:function">
+      <xsl:variable name="synopsis">
+        <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
+          <xsl:attribute name="xml:id" select="'_refsynopsisdiv-'||generate-id(.)"/>
+          <xsl:for-each select="$objects/self::a:function">
+            <funcsynopsis>
+              <funcprototype>
+                <funcdef>
+                  <function>
+                    <xsl:sequence select="substring-before(@display-name, '#')"/>
+                  </function>
+                  <xsl:if test="@as">
+                    <type>
+                      <xsl:sequence select="@as/string()"/>
+                    </type>
+                  </xsl:if>
+                </funcdef>
+                <xsl:choose>
+                  <xsl:when test="a:param">
+                    <xsl:for-each select="a:param">
+                      <paramdef>
+                        <parameter>
+                          <xsl:value-of select="@name/string()"/>
+                        </parameter>
+                        <xsl:if test="@as">
+                          <type>
+                            <xsl:value-of select="@as/string()"/>
+                          </type>
+                        </xsl:if>
+                      </paramdef>
+                    </xsl:for-each>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <void/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </funcprototype>
+            </funcsynopsis>
+          </xsl:for-each>
+        </refsynopsisdiv>
+      </xsl:variable>
+      <xsl:apply-templates select="$synopsis/node()"/>
+    </xsl:when>
+    <xsl:when test="db:refclass = 'variable' and $objects/self::a:variable">
+      <xsl:variable name="synopsis">
+        <xsl:variable name="initializer"
+                      select="empty(db:refclass[contains-token(@role, 'noinitializer')])"/>
+        <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
+          <xsl:attribute name="xml:id" select="'_refsynopsisdiv-'||generate-id(.)"/>
+          <xsl:for-each select="$objects/self::a:variable">
+            <xsl:variable name="dname"
+                          select="@display-name/string()"/>
+            <xsl:variable name="decl"
+                          select="$param_xsl//xsl:param[@name=$dname]
+                                  |$param_xsl//xsl:variable[@name=$dname]"/>
 
-          <xsl:if test="count($decl) != 1">
-            <xsl:message select="count($decl), ': ', $dname"/>
-          </xsl:if>
-
-          <fieldsynopsis>
-            <xsl:if test="@as">
-              <type>
-                <xsl:sequence select="@as/string()"/>
-              </type>
+            <xsl:if test="count($decl) != 1">
+              <xsl:message select="count($decl), ': ', $dname"/>
             </xsl:if>
-            <varname>
-              <xsl:value-of select="@display-name/string()"/>
-            </varname>
-            <xsl:if test="$decl and $initializer">
-              <initializer>
-                <xsl:sequence select="$decl/@select/string()"/>
-              </initializer>
+
+            <fieldsynopsis>
+              <xsl:if test="@as">
+                <type>
+                  <xsl:sequence select="@as/string()"/>
+                </type>
+              </xsl:if>
+              <varname>
+                <xsl:value-of select="@display-name/string()"/>
+              </varname>
+              <xsl:if test="$decl and $initializer">
+                <initializer>
+                  <xsl:sequence select="$decl/@select/string()"/>
+                </initializer>
+              </xsl:if>
+            </fieldsynopsis>
+            <xsl:if test="not($decl/@select) and count($decl) = 1 and $initializer">
+              <xsl:variable name="content">
+                <xsl:apply-templates select="$decl" mode="m:strip-ns"/>
+              </xsl:variable>
+              <!-- Serialize the content and then excise the xmlns:xsl namespace -->
+              <xsl:variable name="content"
+                            select="serialize($content, map { 'indent': true() })"/>
+              <xsl:variable
+                  name="content"
+                  select="replace($content,
+                          '\s+xmlns:xsl=.http://www.w3.org/1999/XSL/Transform.&#10;\s*',
+                          ' ')"/>
+              <!-- in case there wasn't a newline after it... -->
+              <xsl:variable
+                  name="content"
+                  select="replace($content,
+                          '\s+xmlns:xsl=.http://www.w3.org/1999/XSL/Transform.\s*',
+                          ' ')"/>
+              <programlisting language="xml" linenumbering="unnumbered">
+                <xsl:sequence select="$content"/>
+              </programlisting>
             </xsl:if>
-          </fieldsynopsis>
-          <xsl:if test="not($decl/@select) and count($decl) = 1 and $initializer">
-            <xsl:variable name="content">
-              <xsl:apply-templates select="$decl" mode="m:strip-ns"/>
+          </xsl:for-each>
+        </refsynopsisdiv>
+      </xsl:variable>
+      <xsl:apply-templates select="$synopsis/node()"/>
+    </xsl:when>
+    <xsl:when test="db:refclass = 'template' and $objects/self::a:template">
+      <xsl:variable name="synopsis">
+        <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
+          <xsl:attribute name="xml:id" select="'_refsynopsisdiv-'||generate-id(.)"/>
+          <xsl:for-each select="$objects">
+            <xsl:variable name="param" as="element()*">
+              <xsl:for-each select="a:param[not(starts-with(@name, 'vp:'))]">
+                <!-- XSLT Explorer doesn't pass us the select expressions -->
+                <wrapper xsl:expand-text="yes">
+                  <xsl:text>  &lt;xsl:param name="{@name/string()}"</xsl:text>
+                  <xsl:if test="@as">
+                    <xsl:text> as="{@as/string()}"</xsl:text>
+                  </xsl:if>
+                  <xsl:if test="@select">
+                    <xsl:text> select="{@select/string()}"</xsl:text>
+                  </xsl:if>
+                  <xsl:text>/&gt;</xsl:text>
+                </wrapper>
+              </xsl:for-each>
             </xsl:variable>
-            <!-- Serialize the content and then excise the xmlns:xsl namespace -->
-            <xsl:variable name="content"
-                          select="serialize($content, map { 'indent': true() })"/>
-            <xsl:variable
-                name="content"
-                select="replace($content,
-                                '\s+xmlns:xsl=.http://www.w3.org/1999/XSL/Transform.&#10;\s*',
-                                ' ')"/>
-            <!-- in case there wasn't a newline after it... -->
-            <xsl:variable
-                name="content"
-                select="replace($content,
-                                '\s+xmlns:xsl=.http://www.w3.org/1999/XSL/Transform.\s*',
-                                ' ')"/>
-            <programlisting language="xml" linenumbering="unnumbered">
-              <xsl:sequence select="$content"/>
-            </programlisting>
-          </xsl:if>
-        </xsl:for-each>
-      </refsynopsisdiv>
-    </xsl:variable>
-    <xsl:apply-templates select="$synopsis/node()"/>
-  </xsl:if>
-
-  <xsl:if test="db:refclass = 'template' and $objects/self::a:template">
-    <xsl:variable name="synopsis">
-      <refsynopsisdiv xmlns="http://docbook.org/ns/docbook">
-        <xsl:for-each select="$objects">
-          <xsl:variable name="param" as="element()*">
-            <xsl:for-each select="a:param">
-              <!-- XSLT Explorer doesn't pass us the select expressions -->
-              <wrapper xsl:expand-text="yes">
-                <xsl:text>  &lt;xsl:param name="{@name/string()}"</xsl:text>
-                <xsl:if test="@as">
-                  <xsl:text> as="{@as/string()}"</xsl:text>
-                </xsl:if>
-                <xsl:if test="@select">
-                  <xsl:text> select="{@select/string()}"</xsl:text>
-                </xsl:if>
-                <xsl:text>/&gt;</xsl:text>
-              </wrapper>
-            </xsl:for-each>
-          </xsl:variable>
-          <xsl:choose>
-            <xsl:when test="$param">
-              <synopsis xsl:expand-text="yes"
-><xsl:processing-instruction name="db" select="' verbatim-style=''plain'''"/>&lt;xsl:template name="{@display-name}"&gt;
-<xsl:sequence select="string-join($param ! string(.), '&#10;')"/>
-&lt;/xsl:template&gt;</synopsis>
-            </xsl:when>
-            <xsl:otherwise>
-              <synopsis xsl:expand-text="yes"
-><xsl:processing-instruction name="db" select="' verbatim-style=''plain'''"/>&lt;xsl:template name="{@display-name}"/&gt;</synopsis>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:for-each>
-      </refsynopsisdiv>
-    </xsl:variable>
-    <xsl:apply-templates select="$synopsis/node()"/>
-  </xsl:if>
+            <xsl:choose>
+              <xsl:when test="$param">
+                <synopsis xsl:expand-text="yes"
+                          ><xsl:processing-instruction name="db" select="' verbatim-style=''plain'''"/>&lt;xsl:template name="{@display-name}"&gt;
+                <xsl:sequence select="string-join($param ! string(.), '&#10;')"/>
+                &lt;/xsl:template&gt;</synopsis>
+              </xsl:when>
+              <xsl:otherwise>
+                <synopsis xsl:expand-text="yes"
+                          ><xsl:processing-instruction name="db" select="' verbatim-style=''plain'''"/>&lt;xsl:template name="{@display-name}"/&gt;</synopsis>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each>
+        </refsynopsisdiv>
+      </xsl:variable>
+      <xsl:apply-templates select="$synopsis/node()"/>
+    </xsl:when>
+    <xsl:when test="db:refclass = 'param'"/>
+    <xsl:when test="db:refclass = 'mode'"/>
+    <xsl:when test="db:refclass = 'pi'"/>
+    <xsl:when test="db:refclass = 'function'"/>
+    <xsl:otherwise>
+      <xsl:message select="'No match in refnamediv: ' || db:refname[1]"/>
+      <xsl:message select="., $objects"/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="db:fieldsynopsis">
@@ -305,6 +322,25 @@
       </pre>
     </div>
   </xsl:if>
+</xsl:template>
+
+<xsl:template match="db:refentrytitle">
+  <xsl:variable name="obsolete"
+                select="../db:refmiscinfo[@otherclass='obsolete']"/>
+
+  <xsl:choose>
+    <xsl:when test="exists($obsolete)">
+      <xsl:variable name="name">
+        <xsl:next-match/>
+      </xsl:variable>
+      <span class="obsolete">
+        <xsl:sequence select="$name"/>
+      </span>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:next-match/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="db:parameter[not(ancestor::db:refsynopsisdiv)]">
@@ -474,9 +510,13 @@
 </xsl:template>
 
 <xsl:template match="db:pubdate[not(node())]">
-  <time class="pubdate" datetime="{current-dateTime()}">
+  <xsl:variable name="Z" select="xs:dayTimeDuration('PT0S')"/>
+  <time class="pubdate"
+        datetime="{format-dateTime(
+                    adjust-dateTime-to-timezone(current-dateTime(), $Z),
+                    '[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01]Z')}">
     <xsl:sequence select="format-dateTime(current-dateTime(),
-                                          '[D01] [MNn,*-3] [Y0001]')"/>
+                             '[D01] [MNn,*-3] [Y0001]')"/>
   </time>
 </xsl:template>
 
@@ -548,13 +588,6 @@
         </th>
       </tr>
     </thead>
-    <tfoot>
-      <tr>
-        <td colspan="2"><sup id="fn.ptf1"><a href="#ptf1">a</a></sup>Some values
-        have been truncated to prevent the table from becoming unwieldy.
-        These values an be identified by a trailing ellipsis (…).</td>
-      </tr>
-    </tfoot>
     <tbody>
       <xsl:for-each select="map:keys($prop)">
         <xsl:sort select="."/>
@@ -570,14 +603,22 @@
         </tr>
       </xsl:for-each>
     </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><sup id="fn.ptf1"><a href="#ptf1">a</a></sup>Some values
+        have been truncated to prevent the table from becoming unwieldy.
+        These values an be identified by a trailing ellipsis (…).</td>
+      </tr>
+    </tfoot>
   </table>
 </xsl:template>
 
 <!-- ============================================================ -->
 
 <xsl:template name="tg:detail">
-  <xsl:variable name="objects"
-                select="key('a-by-name', ../db:refmeta/db:refmiscinfo, $explorer)"/>
+  <xsl:variable
+      name="objects"
+      select="key('a-by-name', ../db:refmeta/db:refmiscinfo[not(@class)], $explorer)"/>
 
   <div class="a-detail mode-detail">
     <div>
@@ -608,9 +649,9 @@
           </xsl:otherwise>
         </xsl:choose>
       </div>
-      <div><xsl:sequence select="../db:refmeta/db:refmiscinfo[1]/node()"/></div>
+      <div><xsl:sequence select="../db:refmeta/db:refmiscinfo[not(@class)][1]/node()"/></div>
     </div>
-    <xsl:for-each select="../db:refmeta/db:refmiscinfo[position() gt 1]">
+    <xsl:for-each select="../db:refmeta/db:refmiscinfo[not(@class)][position() gt 1]">
       <div>
         <div/>
         <div><xsl:sequence select="node()"/></div>
@@ -618,7 +659,7 @@
     </xsl:for-each>
 
     <xsl:choose>
-      <xsl:when test="contains(../db:refmeta/db:refmiscinfo[1],
+      <xsl:when test="contains(../db:refmeta/db:refmiscinfo[not(@class)][1],
                       '{http://docbook.org/extensions/xslt}')">
         <!-- this is an extension function -->
       </xsl:when>
@@ -627,7 +668,7 @@
       </xsl:when>
       <xsl:when test="empty($objects)">
         <xsl:message select="'Non-existant:',
-                             ../db:refmeta/db:refmiscinfo/string()"/>
+                             ../db:refmeta/db:refmiscinfo[not(@class)]/string()"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:variable name="defined-in" as="element()*">
@@ -707,6 +748,24 @@
           <div>
             <div class="prop">Static:</div>
             <div>Yes</div>
+          </div>
+        </xsl:if>
+        <xsl:if test="../db:refmeta/db:refmiscinfo[@class='version']">
+          <div>
+            <div class="prop">Since:</div>
+            <div>
+              <xsl:apply-templates
+                  select="../db:refmeta/db:refmiscinfo[@class='version']/node()"/>
+            </div>
+          </div>
+        </xsl:if>
+        <xsl:if test="../db:refmeta/db:refmiscinfo[@otherclass='deprecated']">
+          <div>
+            <div class="prop">Deprecated since:</div>
+            <div>
+              <xsl:apply-templates
+                  select="../db:refmeta/db:refmiscinfo[@otherclass='deprecated']/node()"/>
+            </div>
           </div>
         </xsl:if>
       </xsl:otherwise>
@@ -846,6 +905,7 @@
 
 <xsl:template name="t:top-nav">
   <xsl:param name="docbook" as="node()" tunnel="yes"/>
+  <xsl:param name="chunk" as="xs:boolean"/>
   <xsl:param name="node" as="element()"/>
   <xsl:param name="prev" as="element()?"/>
   <xsl:param name="next" as="element()?"/>
@@ -912,6 +972,7 @@
 
 <xsl:template name="t:bottom-nav">
   <xsl:param name="docbook" as="node()" tunnel="yes"/>
+  <xsl:param name="chunk" as="xs:boolean"/>
   <xsl:param name="node" as="element()"/>
   <xsl:param name="prev" as="element()?"/>
   <xsl:param name="next" as="element()?"/>
@@ -964,7 +1025,7 @@
   <div class="infofooter">
     <xsl:variable name="years" select="root($db-node)/db:book/db:info/db:copyright/db:year"/>
     <span class="copyrightfooter">
-      <a href="dbcpyright.html">Copyright</a>
+      <a href="dbcpyright{$html-extension}">Copyright</a>
       <xsl:text> &#xA9; </xsl:text>
       <xsl:value-of select="$years[1]"/>
       <xsl:if test="count($years) gt 1">

@@ -1,0 +1,54 @@
+<revhistory xmlns='http://docbook.org/ns/docbook'
+            xmlns:xlink="http://www.w3.org/1999/xlink">
+<?db revhistory-style="list"?>
+
+<revision xml:id="r212">
+<revnumber>2.1.2</revnumber>
+<date>2023-04-10</date>
+<revdescription>
+<itemizedlist>
+<listitem>
+<para>Added a <parameter>verbatim-trim-leading-blank-lines</parameter> parameter. This
+is analagous to the <parameter>verbatim-trim-trailing-blank-lines</parameter> parameter except
+for leading blank lines instead of trailing ones. It is false by default, for backwards
+compatibility, but note that some syntax highlighters may trim leading (and trailing)
+blank links anyway.</para>
+</listitem>
+</itemizedlist>
+</revdescription>
+</revision>
+
+<revision xml:id="r211">
+<revnumber>2.1.1</revnumber>
+<date>2023-04-08</date>
+<revdescription>
+<itemizedlist>
+<listitem>
+<para>Added a <parameter>copy-verbatim-js</parameter> parameter. This feature 
+creates a dynamic “copy” button on verbatim listings that will copy the
+text of the listing (without callouts, line annotations, etc.) to the clipboard.</para>
+</listitem>
+<listitem>
+<para>Fixed a minor issue where some spurious namespace declarations were being copied
+into the HTML output.</para>
+</listitem>
+</itemizedlist>
+</revdescription>
+</revision>
+
+<revision xml:id="r210">
+<revnumber>2.1.0</revnumber>
+<date>2023-04-07</date>
+<revdescription>
+<para>This is the first official release of the “2.x” versions of the
+stylesheets. Version 2.1.0 introduces a number of new features and
+corrects major issues with localization and media object rendering,
+but is not entirely backwards compatible with the 1.x versions. The
+incompatibilities should mostly effect customization layers, not
+formatted documents, though the HTML output will be a little different
+in most cases. For a summary of the changes, see <xref
+linkend="version2"/>.</para>
+</revdescription>
+</revision>
+
+</revhistory>

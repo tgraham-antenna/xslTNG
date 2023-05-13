@@ -2,21 +2,26 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:db="http://docbook.org/ns/docbook"
                 xmlns:f="http://docbook.org/ns/docbook/functions"
+                xmlns:fp="http://docbook.org/ns/docbook/functions/private"
                 xmlns:m="http://docbook.org/ns/docbook/modes"
+                xmlns:map="http://www.w3.org/2005/xpath-functions/map"
                 xmlns:t="http://docbook.org/ns/docbook/templates"
                 xmlns:v="http://docbook.org/ns/docbook/variables"
+                xmlns:vp="http://docbook.org/ns/docbook/variables/private"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:docbook"
-                exclude-result-prefixes="db f m t v xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
 
 <xsl:template name="t:inline">
   <xsl:param name="namemap" select="'span'"/>
   <xsl:param name="class" as="xs:string*"/>
   <xsl:param name="local-name-as-class" as="xs:boolean" select="true()"/>
-  <xsl:param name="content" select="()"/>
   <xsl:param name="extra-attributes" as="attribute()*" select="()"/>
+  <xsl:param name="content">
+    <xsl:apply-templates/>
+  </xsl:param>
 
   <xsl:variable name="map"
                 select="if ($namemap instance of map(xs:string, xs:string))
@@ -58,11 +63,6 @@
 
   <xsl:variable name="attrs" as="attribute()*">
     <xsl:apply-templates select="@*"/>
-<!--
-    <xsl:if test="exists($classes)">
-      <xsl:attribute name="class" select="string-join($classes, ' ')"/>
-    </xsl:if>
--->
   </xsl:variable>
 
   <xsl:element namespace="http://www.w3.org/1999/xhtml"
@@ -74,16 +74,7 @@
     <xsl:sequence select="$extra-attributes"/>
     <xsl:apply-templates select="." mode="m:link">
       <xsl:with-param name="primary-markup" select="false()"/>
-      <xsl:with-param name="content" as="item()*">
-        <xsl:choose>
-          <xsl:when test="empty($content)">
-            <xsl:call-template name="t:xlink"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:sequence select="$content"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:with-param>
+      <xsl:with-param name="content" select="$content"/>
     </xsl:apply-templates>
   </xsl:element>
 </xsl:template>
@@ -200,7 +191,7 @@
                               starts-with(system-property('xsl:product-version'), 'EE')
                               ))"
               select="format-dateTime(xs:dateTime(.), $format,
-                                      f:language(.), (), ())"/>
+                                      f:l10n-language(.), (), ())"/>
         </xsl:with-param>
         <xsl:with-param name="extra-attributes" as="attribute()*">
           <xsl:attribute name="time" select="."/>
@@ -223,7 +214,7 @@
                               starts-with(system-property('xsl:product-version'), 'EE')
                               ))"
               select="format-date(xs:date(.), $format,
-                                  f:language(.), (), ())"/>
+                                  f:l10n-language(.), (), ())"/>
         </xsl:with-param>
         <xsl:with-param name="extra-attributes" as="attribute()*">
           <xsl:attribute name="time" select="."/>
@@ -380,10 +371,15 @@
     <xsl:when test="exists(node())">
       <xsl:call-template name="t:inline"/>
     </xsl:when>
-    <xsl:when test="exists(f:check-gentext(., 'keycap', $lookup))">
+    <xsl:when test="empty($lookup)">
+      <xsl:message select="'Ignoring keycap without function attribute or content'"/>
+    </xsl:when>
+    <xsl:when test="exists(fp:localization-template(., 'keycap'))">
       <xsl:call-template name="t:inline">
         <xsl:with-param name="content" as="item()*">
-          <xsl:sequence select="f:gentext(., 'keycap', $lookup)"/>
+          <xsl:apply-templates select="." mode="m:gentext">
+            <xsl:with-param name="group" select="'keycap'"/>
+          </xsl:apply-templates>
         </xsl:with-param>
         <xsl:with-param name="class" select="$lookup"/>
       </xsl:call-template>
@@ -754,10 +750,6 @@
   </xsl:call-template>
 </xsl:template>
 
-<xsl:template match="comment()|processing-instruction()">
-  <!-- drop these on the floor -->
-</xsl:template>
-
 <xsl:template match="processing-instruction('DocBook-xslTNG-version')" as="text()">
   <xsl:value-of select="$v:VERSION"/>
 </xsl:template>
@@ -808,9 +800,12 @@
 </xsl:template>
 
 <xsl:template match="processing-instruction('eval')" as="item()*">
-  <xsl:evaluate xpath="string(.)"
-                context-item="."
-                namespace-context="."/>
+  <xsl:if test="f:is-true($allow-eval)">
+    <xsl:evaluate xpath="string(.)"
+                  with-params="map:merge(($vp:static-parameters, $vp:dynamic-parameters))"
+                  context-item="."
+                  namespace-context="."/>
+  </xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

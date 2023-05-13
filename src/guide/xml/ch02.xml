@@ -3,7 +3,7 @@
 	 xmlns:xlink="http://www.w3.org/1999/xlink"
 	 version="5.0" xml:id="using">
 <info>
-  <?db filename="ch02.html"?>
+  <?db filename="ch-using"?>
   <title>Using the stylesheets</title>
 </info>
 
@@ -149,7 +149,7 @@ includes the files in the distribution.
 <varlistentry><term>No <code>-init</code> option</term>
 <listitem>
 <para>The <citetitle>DocBook xslTNG</citetitle>
-<link xlink:href="extensions">extension functions</link> will be registered
+<link linkend="extensions">extension functions</link> will be registered
 automatically.</para>
 </listitem>
 </varlistentry>
@@ -316,7 +316,8 @@ For Saxon PE and EE, the class is <classname>com.saxonica.Transform</classname>.
 <para>The <filename class="directory">docker</filename> directory
 contains an experimental Dockerfile. Using docker allows you to
 isolate the environment necessary to run the <citetitle>DocBook xslTNG
-Stylesheets</citetitle> from your local environment.</para>
+Stylesheets</citetitle> from your local environment. (If you’re using Linux, see
+<xref linkend="docker-on-linux"/>.)</para>
 
 <para>Using Docker is a three step process. Step 0, you have to have
 installed Docker!</para>
@@ -336,10 +337,10 @@ you can make this anything you want. There’s a <code>VERSION</code>
 build argument if you want to build a particular release. For example,</para>
 
 <screen role="monochrome border">$ <userinput
->docker build --build-arg VERSION=0.9.14 -t docbook-xsltng .</userinput
+>docker build --build-arg VERSION=<?DocBook-xslTNG-version?> -t docbook-xsltng .</userinput
 ></screen>
 
-<para>will build a Docker image for the 0.9.14 release of the
+<para>will build a Docker image for the <?DocBook-xslTNG-version?> release of the
 stylesheets irrespective of the version in the Dockerfile.</para>
 </listitem>
 <listitem>
@@ -392,6 +393,73 @@ everytime a new stylesheet release occurs. You can simply mount the new
 <filename class="directory">xslt</filename> directory into the container
 like any other directory.</para>
 </tip>
+
+<section xml:id="docker-on-linux">
+<title>Docker on Linux</title>
+
+<para>When a Docker container running on Linux writes to the local
+filesystem, for example because you mounted it in a container, any
+files written by the container will be owned by “root”. This can be
+quite inconvenient.</para>
+
+<para>If there’s an elegant solution to this problem, I haven’t found it.
+Some users have reported success using <link xlink:href="https://podman.io/">podman</link>,
+a Docker-compatible, open source alternative that apparently doesn’t exhibit this behavior.
+</para>
+
+<para>The following approach will work with Docker, but it’s a bit more complicated.</para>
+
+<orderedlist>
+<listitem>
+<para>Create a volume, say <replaceable>docbook-output</replaceable>,
+with the <code>docker volume</code> command.</para>
+<screen>docker volume create <replaceable>docbook-output</replaceable></screen>
+</listitem>
+<listitem>
+<para>Instead of mounting a directory on the local filesystem in the container, mount
+the volume.</para>
+</listitem>
+<listitem>
+<para>Run the transformation.</para>
+</listitem>
+<listitem>
+<para>In order to copy the files off the volume, the volume has to be
+mounted on a running container. You can start one with <code>docker run</code>,
+for example:</para>
+<screen>docker run —mount source=<replaceable>docbook-output</replaceable>,target=/out \
+       --name copy-helper -d busyboxy sleep 3600</screen>
+</listitem>
+<listitem>
+<para>Copy the files out of the container. For a single file, <code>docker cp</code> will
+do the trick:</para>
+<screen>docker cp copy-helper:/out/<replaceable>filename.html</replaceable> .</screen>
+<para>If there are multiple output files, you can copy them individually, or you can use 
+<code>docker exec</code>:</para>
+<screen>docker exec copy-helper \
+       /bin/sh -c 'cd /out &amp;&amp; tar cf - .' &gt; out.tar</screen>
+<para>That’ll copy all the files into the <filename>out.tar</filename> archive which you can
+expand wherever you like.</para>
+</listitem>
+<listitem>
+<para>When you have the files, you can stop and remove the container with:</para>
+<screen>docker stop copy-helper
+docker rm copy-helper</screen>
+</listitem>
+<listitem>
+<para>You may want to remove the volume you created as well:</para>
+<screen>docker volume rm docbook-output</screen>
+<para>and recreate it for the next transformation. If you don’t, be
+aware that the content of the volume will persist. If you resuse the
+volume for other transformations, the output from the various
+transformations will be mingled together on the volume.</para>
+<para>And, perhaps obviously, if you remove the volume before you copy
+the files off of it, the files will be lost.</para>
+</listitem>
+</orderedlist>
+
+<para>In short: using a Docker container on Linux is somewhat less convenient.</para>
+
+</section>
 </section>
 
 <section xml:id="extensions">
@@ -882,6 +950,241 @@ verbatim options only apply when Pygments is used.</para>
 <parameter>verbatim-syntax-highlighter</parameter> parameter.</para>
 </section>
 
+<section xml:id="persistent-toc">
+<title>Persistent table of contents</title>
+
+<para>The persistent Table of Contents (ToC) provides a full ToC for
+an entire document accessible from each <link linkend="chunking">chunked</link>
+page.</para>
+
+<para>The ToC is accessed by clicking on the “book” icon in the upper right
+corner of the page as shown in <xref linkend="fig.ptoc.1"/>.</para>
+
+<figure xml:id="fig.ptoc.1">
+<title>Opening the ToC</title>
+<mediaobject>
+<alt>Screen capture with an arrow pointing at the closed book icon in
+the upper-right corner.</alt>
+<imageobject>
+<imagedata fileref="media/ptoc-1.png"/>
+</imageobject>
+</mediaobject>
+</figure>
+
+<para>The icon and other aspects of the style can be changed by providing
+<parameter>persistent-toc-css</parameter>.</para>
+
+<para>Once open, the ToC is displayed. A long ToC will be scrolled to
+the location of the current page in the document as shown in
+<xref linkend="fig.ptoc.2"/>.</para>
+
+<figure xml:id="fig.ptoc.2">
+<title>The Persistent ToC</title>
+<mediaobject>
+<alt>Screen capture showing the persistent ToC window on the right.</alt>
+<imageobject>
+<imagedata fileref="media/ptoc-2.png"/>
+</imageobject>
+</mediaobject>
+</figure>
+
+<para>The persistent ToC popup is transient by default, meaning that
+it will disappear if you use it to navigate to a different page. If
+you open the popup by “shift-clicking” on it, the ToC will persist
+until you dismiss it. This can also be accomplished by selecting the
+check box in the ToC. The presense of the search bar is controlled by
+the <parameter>persistent-toc-search</parameter> parameter.</para>
+
+<!-- N.B. This ID is in the persistent-toc.js file; do not change it! -->
+<section xml:id="ptoc-data-file">
+<title>Persistent ToC data</title>
+
+<para>The data used by the persistent ToC can be stored in a separate
+file or stored in each chunk. This is controlled by the
+<parameter>persistent-toc-filename</parameter>.</para>
+
+<orderedlist>
+<listitem>
+<para>If <link linkend="chunking">chunking</link> is enabled and the
+<parameter>persistent-toc-filename</parameter> parameter is non-empty,
+it’s used as a filename and a single copy of the ToC will be saved in
+that file.</para>
+<para>The benefit of this approach is that the HTML chunks are
+smaller. If the persistent ToC is written into every chunk, the size
+of each HTML chunk increases in proportion to the size of the ToC. For
+a large document with lots of small pages, this can be a significant
+percentage of the overall size.</para>
+<para>There are two disadvantages:</para>
+<orderedlist>
+<listitem>
+<para>This will not work if the documents are accessed with
+<code>file:</code> URIs: you must use <code>http</code> (and in some
+environments, perhaps <code>https</code>) to load the documents. The
+browser will (quite reasonably) not allow JavaScript to load documents
+from the filesystem.</para>
+</listitem>
+<listitem>
+<para>Also, with this approach, opening the ToC requires another
+document to be loaded into the browser. For a large ToC, this can
+introduce visible latency, although browser caching tends to reduce
+that after the document has been loaded once.
+</para>
+</listitem>
+</orderedlist>
+</listitem>
+<listitem>
+<para>If the 
+<parameter>persistent-toc-filename</parameter> parameter is the empty
+sequence, a copy of the ToC is stored in each chunk.</para>
+
+<note>
+<para>When stored in each chunk, the Table of Contents is secreted away in a
+<tag namespace="http://www.w3.org/1999/xhtml">script</tag> element so that
+it will be ignored by screen readers and other user agents that don’t
+support JavaScript or CSS.
+</para>
+</note>
+
+<para>The benefit of this approach is that it requires no additional
+document to be loaded and will work even if the documents are loaded
+with <code>file</code> URIs.</para>
+<para>The disadvantage of this approach is that it increases the size of
+each chunk. Whether that matters depends on the size of the ToC, the relative
+size of the chunks, bandwidth and other constraints.</para>
+</listitem>
+<listitem>
+<para>If chunking <emphasis>is not</emphasis> being used, there will
+only be one HTML result and the ToC will always be stored in that chunk.
+</para>
+</listitem>
+</orderedlist>
+</section>
+</section>
+
+<section xml:id="onpage-toc">
+<title>On-page table of contents</title>
+
+<para>Documents come in many shapes and sizes. Consequently, there are
+a variety of navigation mechanisms available. For long documents, such as books,
+a Table of Contents (ToC) is traditional (as are indexes). For web presentation,
+long documents may be broken into chunks, for example at the chapter level.
+In this case, header and footer navigation between chunks is almost always
+available. For large documents a “<link linkend="persistent-toc">persistent
+ToC</link>” can enable quick navigation from any chunk.</para>
+
+<para>You can also enable an on-page ToC. The on-page ToC provides a
+navigation mechanism for sections within a page. By default, it
+appears on the right of the page if the window is wide enough to
+comfortably display it next to the main body.</para>
+
+<para>The current implementation requires JavaScript. In fact it is not
+constructed from the DocBook markup, but instead from the HTML markup when
+the page is rendered. To be precise, the ToC is constructed from HTML
+<tag namespace="http://www.w3.org/1999/xhtml">section</tag> elements that
+begin with a <tag namespace="http://www.w3.org/1999/xhtml">header</tag> that
+contains an
+<tag namespace="http://www.w3.org/1999/xhtml"
+>h1</tag>…<tag namespace="http://www.w3.org/1999/xhtml">h6</tag>
+element. It is therefore either a bug or a feature, depending on your perspective,
+that a customization layer that changes how sections are marked up will change
+what appears in the ToC. If you simply wish to suppress a particular section
+from appearing in the ToC, add <literal>nopagetoc</literal> to its
+<tag class="attribute">class</tag> attribute.</para>
+
+<para>Several parameters control presentation and formatting of the on-page ToC.</para>
+
+<variablelist>
+<varlistentry><term><parameter>pagetoc-elements</parameter></term>
+<listitem>
+<para>A list of the names of the elements (technically, the classes of
+the sections) that should get an on-page ToC. It’s empty by default (meaning no
+such ToC is rendered). For the standard presentation of this guide,
+the list is set to <code>preface chapter appendix refentry</code>.
+(The sneaky among you may wonder if you could simply set it to “<code>component</code>”
+because that class is used for all those elements; “Yes. Yes, you could.”)
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><parameter>pagetoc-dynamic</parameter></term>
+<listitem>
+<para>Determines whether or not the ToC is “dynamic”. Inspired by
+Kevin Drum’s
+<link xlink:href="https://kld.dev/toc-animation/">table of contents progress
+animation</link>, the ToC keeps track of the reader’s location in the main
+view and highlights the corresponding sections in the ToC (albeit without the
+clever SVG animation of the original).</para>
+<para>Set this parameter to false if you find the animation distracting.
+(If the animation is enabled, a control is provided to let the reader turn it off,
+in case <emphasis>they</emphasis> find it distracting.)</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><parameter>pagetoc-js</parameter></term>
+<listitem>
+<para>This is the JavaScript that implements the on-page ToC. Changing this
+parameter allows you to replace it with JavaScript of your own invention.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>CSS</term>
+<listitem>
+<para>There is no <literal>pagetoc-css</literal> parameter; the CSS is integrated
+into the standard CSS. You can find it in the <filename>pagetoc.scss</filename> file
+in the repository if you want to change the presentation. (Don’t change that file,
+simply add overriding rules later in the cascade.)
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>There is also a JavaScript API that you can use to control some features
+of the presentation. This is done by adding a <code>DocBook</code> property to
+the browser’s <code>window</code> object. The value of the <code>DocBook</code> property
+should be a map. To control the on-page ToC, add a <code>pagetoc</code> property
+to the <code>DocBook</code> map. The value of this property must also be a map.</para>
+
+<para>The properties of the <code>pagetoc</code> map can be used to change
+the display:</para>
+
+<variablelist>
+<varlistentry><term><code>decorated</code></term>
+<listitem>
+<para>This is the markup used for the user-control on the on-page ToC when
+the ToC is decorated. The default value is “<literal>☀</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><code>plain</code></term>
+<listitem>
+<para>This is the markup used for the user-control on the on-page ToC when
+the ToC is plain (not decorated). The default value is “<literal>￮</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><code>hidden</code></term>
+<listitem>
+<para>This is the markup used for the user-control on the on-page ToC when
+the ToC is hidden. The default value is “<literal>◄</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><code>nothing_to_reveal</code></term>
+<listitem>
+<para>This property controls how the on-page ToC is rendered if there are 
+no additional sections to be revealed. It can have the value
+“<literal>hide</literal>”, to hide the ToC, “<literal>plain</literal>” to
+make its presentation plain in this case, or “<literal>decorated</literal>” to
+use the decorated style. The ToC will not appear if there are no sections.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>To use the JavaScript API, make sure your assignments to the
+<code>DocBook</code> object are performed <emphasis>before</emphasis> the
+on-page ToC JavaScript is executed.</para>
+
+</section>
+
 <section xml:id="print">
 <title>Print output (dead tree editions)</title>
 
@@ -910,6 +1213,78 @@ presentation, in the printed version.</para>
 <para>The resulting HTML document can be formatted directly with a
 CSS paged-media formatter.</para>
 
+</section>
+
+<section xml:id="epub">
+<title>EPUB output</title>
+
+<para>The <citetitle>DocBook xslTNG Stylesheets</citetitle> will
+produce output designed for EPUB(3) if you use the
+<filename>epub.xsl</filename> stylesheet instead of
+<filename>docbook.xsl</filename>. This is new in version 1.11.0 and
+may be incomplete. The output conforms to
+<link xlink:href="https://www.w3.org/publishing/epubcheck/">EPUBCheck</link>
+version 3.2.</para>
+
+<para>Producing an EPUB file is a slightly complicated process. You
+must produce (X)HTML that conforms to strict requirements, you must
+produce a media type document containing a specific text string, you
+must produce a manifest that identifies all of the content including
+all the images, stylesheets, fonts, etc, and you must finally create a
+ZIP archive (with some special consideration as well).</para>
+
+<para>The stylesheets can only do part of this process. In some future
+release where we use, for example, an XProc 3.0 pipeline, it may be
+practical to do more.</para>
+
+<para>When you run the EPUB stylesheet, the principle result document is the
+media type document. This has two useful side effects: first, it establishes the
+output base URI from which all the relative documents can be created, and second, if
+you fail to process some element in the input, you’re likely to get extra text characters
+in the principle result document. That will cause tools to reject the EPUB and draw your
+attention to the error.</para>
+
+<para>The stylesheets also produce the META-INF files and the OPS
+directory containing the document parts and the manifest.</para>
+
+<para>There are two parameters specific to EPUB:</para>
+
+<variablelist>
+<varlistentry><term><literal>pub-id</literal></term>
+<listitem>
+<para>This is the unique identifier for your EPUB. If you don’t specify one, a random
+one will be generated for you.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><literal>manifest-extra</literal></term>
+<listitem>
+<para>This is a URI. If it’s specified, then it must be an XML document and that will
+be added to the EPUB manifest. This is how you can add links to media and other resources
+that the stylesheets don’t know about.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<section xml:id="metadata">
+<title>Adding metadata</title>
+<para>You can add elements to the <tag>info</tag> element of the root element of your
+document to add metadata to your EPUB files. Elements in the Dublin Core namespace
+will be copied through. You can also add the elements
+<code>meta</code> and <code>link</code> in the special namespace
+<code>http://docbook.org/ns/docbook/epub</code>.</para>
+</section>
+
+<section xml:id="epub-in-ation">
+<title>EPUB in action</title>
+
+<para>The <link
+xlink:href="https://github.com/docbook/getting-started/">Getting
+Started</link> project has been updated to show how to create EPUB
+from a book. The project has support for dealing with external media,
+fonts, and constructing the final ZIP file.</para>
+</section>
 </section>
 </chapter>
 

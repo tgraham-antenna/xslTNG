@@ -4,6 +4,17 @@
 <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
 <title>DocBook xslTNG</title>
 <link href="css/style.css" rel="stylesheet" />
+<style>
+.note {
+  font-size: 80%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 4px solid #ffbc42;
+  border-radius: 1rem;
+}
+</style>
 <link rel="shortcut icon" href="media/xsltng-icon.png" />
 </head>
 <body>
@@ -26,11 +37,26 @@ also supported.</p>
 <div>
 <h3 id="documentation">Documentation</h3>
 
-<p>The stylesheets are documented in the
-<a href="guide/index.html"><cite>DocBook: xslTNG Reference</cite></a>.
-Version 1.8.0 is also available
-as <a href="pdf/DocBook-xslTNG-1.8.0.pdf">a PDF</a>.
-</p>
+<p>The current release is documented in the
+<a href="guide/index.html"><cite>DocBook: xslTNG Reference</cite>
+(<a href="/epub/DocBook-xslTNG-2.1.0.epub">EPUB</a>,
+<a href="/pdf/DocBook-xslTNG-2.1.0.pdf">PDF</a>).
+</a></p>
+
+<!--
+<p>Documentation for the preview release
+is <a href="guide/2.0.15/">also available</a>
+(<a href="/epub/DocBook-xslTNG-2.0.15.epub">EPUB</a>,
+<a href="/pdf/DocBook-xslTNG-2.0.15.pdf">PDF</a>).</p>
+
+<p class="note">The ability to publish different versions of the documentation
+simultaneously was added on 6 January 2023. If you have bookmarked pages from
+earlier releases, you’ll need to update them. The plan is that
+<code>/guide</code> will always redirect you to the documentation for
+the current “production” release. Other releases are available under
+<code>/guide/<em>version</em></code>, for example
+<a href="guide/2.0.15/">guide/2.0.15/</a>.</p>
+-->
 
 <p>The <a href="https://xslt.xmlexplorer.com/">XSLT Explorer</a>
 summary of the stylesheets <a href="explorer/index.html">is also available</a>.
@@ -54,7 +80,7 @@ of test documents.</p>
     <p>This chapter of the “<a href="samples/fit/">Five Interesting Things</a>”
     sample document explains some of
     the new features of the stylesheets and highlights the improved navigation
-    in <a href="guide/ch02.html#chunking">chunked</a> pages.
+    in <a href="guide/2.1.0/ch-using.html#chunking">chunked</a> pages.
     </p>
     <div class="mediaobject" summary="Screenshot of a rendered DocBook chapter.">
       <details>
@@ -148,7 +174,6 @@ of test documents.</p>
 feature <a href="samples/themes/">is also available</a>.</p>
 
 </div>
-
 <div>
 <h3 id="getting">Getting the stylesheets</h3>
 
@@ -162,24 +187,22 @@ They are also available
 <h4>The latest release</h4>
 
 <p>The <a href="https://github.com/docbook/xslTNG/releases/latest">latest release</a>
-is version <?xsltng-version?> published <?pubdate?>.</p>
+is version <?xsltng-version?> published at <?pubdate?>.</p>
 </div>
+
 <div>
-<h4>The cutting edge<img class="badge" alt="CirclCI build status badge"
-     src="https://circleci.com/gh/docbook/xslTNG.svg?style=shield"/>
-</h4>
+<h4>The cutting edge</h4>
 
 <p>The <a href="https://github.com/docbook/xslTNG/">current
 development branch</a> contains the latest commits since the last
 release.</p>
 
-<p>Current <a href="https://circleci.com/gh/docbook/xslTNG">status</a>: <?testsummary?>
+<p>Current <a href="https://github.com/docbook/xslTNG/actions">status</a>: <?testsummary?>
 </p>
 
 <p>Instructions for building the stylesheets from the sources are
-included <a href="guide/ch05.html">in the guide</a>.</p>
+included <a href="guide/2.1.0/ch-building.html">in the guide</a>.</p>
 
-</div>
 </div>
 </div>
 <div>
@@ -203,6 +226,7 @@ in the reference guide, let us know!</li>
 report it</a>!</li>
 </ul>
 
+</div>
 </div>
 </main>
 <footer>

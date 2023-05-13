@@ -44,8 +44,12 @@
 <xsl:template match="db:msglevel|db:msgorig|db:msgaud">
   <div>
     <xsl:apply-templates select="." mode="m:attributes"/>
-    <xsl:sequence select="f:gentext(., 'title')"/>
-    <xsl:text>: </xsl:text>
+    <xsl:apply-templates select="." mode="m:gentext">
+      <xsl:with-param name="group" select="'label'"/>
+    </xsl:apply-templates>
+    <xsl:apply-templates select="." mode="m:gentext">
+      <xsl:with-param name="group" select="'label-separator'"/>
+    </xsl:apply-templates>
     <xsl:apply-templates/>
   </div>
 </xsl:template>

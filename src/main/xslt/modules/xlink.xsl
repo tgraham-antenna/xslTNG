@@ -130,14 +130,7 @@
     <xsl:when test="@xlink:type = 'simple' or @xlink:href">
       <xsl:call-template name="tp:simple-xlink">
         <xsl:with-param name="content">
-          <xsl:choose>
-            <xsl:when test="empty($content)">
-              <xsl:apply-templates/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:sequence select="$content"/>
-            </xsl:otherwise>
-          </xsl:choose>
+          <xsl:sequence select="$content"/>
         </xsl:with-param>
       </xsl:call-template>
     </xsl:when>
@@ -151,14 +144,7 @@
 
     <xsl:otherwise>
       <!-- It's just a normal, unlinked element -->
-      <xsl:choose>
-        <xsl:when test="empty($content)">
-          <xsl:apply-templates/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:sequence select="$content"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:sequence select="$content"/>
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
@@ -287,7 +273,7 @@
         <span class="xlink-arc-list" db-arcs="{f:generate-id(.)}-arcs"/>
         <span class="nhrefs" id="{f:generate-id(.)}-arcs">
           <span class="xlink-arc-delim before">
-            <xsl:sequence select="f:gentext(., 'separator', 'xlink-arclist-before')"/>
+            <xsl:sequence select="$xlink-arclist-before"/>
           </span>
           <span class="xlink-arc-title">
             <xsl:if test="$to/../@xlink:title">
@@ -296,13 +282,13 @@
           </span>
           <xsl:if test="$to/../@xlink:title">
             <span class="xlink-arc-delim sep">
-              <xsl:sequence select="f:gentext(., 'separator', 'xlink-arclist-titlesep')"/>
+              <xsl:sequence select="$xlink-arclist-titlesep"/>
             </span>
           </xsl:if>
           <xsl:for-each select="$to">
             <xsl:if test="position() gt 1">
               <span class="xlink-arc-delim sep">
-                <xsl:sequence select="f:gentext(., 'separator', 'xlink-arclist-sep')"/>
+                <xsl:sequence select="$xlink-arclist-sep"/>
               </span>
             </xsl:if>
             <span class="arc">
@@ -324,7 +310,7 @@
             </span>
           </xsl:for-each>
           <span class="xlink-arc-delim after">
-            <xsl:sequence select="f:gentext(., 'separator', 'xlink-arclist-after')"/>
+            <xsl:sequence select="$xlink-arclist-after"/>
           </span>
         </span>
       </span>

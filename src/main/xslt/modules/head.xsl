@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:db="http://docbook.org/ns/docbook"
                 xmlns:f="http://docbook.org/ns/docbook/functions"
+                xmlns:fp="http://docbook.org/ns/docbook/functions/private"
                 xmlns:h="http://www.w3.org/1999/xhtml"
                 xmlns:m="http://docbook.org/ns/docbook/modes"
                 xmlns:mp="http://docbook.org/ns/docbook/modes/private"
@@ -12,8 +13,10 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns="http://www.w3.org/1999/xhtml"
                 default-mode="m:docbook"
-                exclude-result-prefixes="db f h m mp t tp v vp xs"
+                exclude-result-prefixes="#all"
                 version="3.0">
+
+<xsl:mode name="m:html-head" on-no-match="shallow-copy"/>
 
 <xsl:template match="*" mode="m:html-head" as="element(h:head)">
   <head>
@@ -47,12 +50,6 @@
     </xsl:if>
 
     <xsl:apply-templates select="." mode="mp:html-head-meta"/>
-
-    <xsl:if test="exists($oxy-markup-css)
-                  and //processing-instruction()[starts-with(name(), 'oxy_')]">
-      <link rel="stylesheet" href="{$resource-base-uri}{$oxy-markup-css}"/>
-    </xsl:if>
-
     <xsl:apply-templates select="." mode="mp:html-head-script"/>
     <xsl:apply-templates select="." mode="m:html-head-script"/>
     <xsl:apply-templates select="." mode="mp:html-head-links"/>
@@ -101,11 +98,6 @@
   </xsl:element>
 </xsl:template>
 
-<xsl:template match="attribute()|text()|comment()|processing-instruction()"
-              mode="m:html-head">
-  <xsl:copy/>
-</xsl:template>
-
 <!-- ============================================================ -->
 
 <xsl:template match="*" mode="mp:html-head-meta">
@@ -121,6 +113,12 @@
                       '[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01]Z')}"/>
     <xsl:choose>
       <xsl:when test="empty(/*/db:info/db:pubdate)"/>
+      <xsl:when test="empty(/*/db:info/db:pubdate/node())">
+        <meta name="dc.created"
+              content="{format-dateTime(
+                         adjust-dateTime-to-timezone(current-dateTime(), $Z),
+                         '[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01]Z')}"/>
+      </xsl:when>
       <xsl:when test="/*/db:info/db:pubdate/string() castable as xs:dateTime">
         <xsl:variable name="date"
                       select="xs:dateTime(/*/db:info/db:pubdate/string())"/>
@@ -153,7 +151,7 @@
 <xsl:template match="*" mode="mp:html-head-script">
   <xsl:if test="f:is-true($persistent-toc)">
     <link rel="stylesheet"
-          href="{$resource-base-uri}{$persistent-toc-css}"/>
+          href="{$resource-base-uri}{fp:minified-css($persistent-toc-css)}"/>
   </xsl:if>
   <xsl:choose>
     <xsl:when test="$verbatim-syntax-highlighter = ('', 'none')"/>
@@ -177,16 +175,23 @@
 
 <xsl:template match="*" mode="mp:html-head-links">
   <xsl:if test="f:is-true($use-docbook-css)">
-    <link href="{$resource-base-uri}css/docbook.css"
-          rel="stylesheet"/>
-    <link href="{$resource-base-uri}css/docbook-screen.css"
+    <link href="{$resource-base-uri}{fp:minified-css('css/docbook.css')}"
           rel="stylesheet" media="screen"/>
-    <link href="{$resource-base-uri}css/docbook-page-setup.css"
-          rel="stylesheet" media="print"/>
-    <link href="{$resource-base-uri}css/docbook-paged.css"
-          rel="stylesheet" media="print"/>
+    <!-- This stylesheet was made conditional in 2.1.0 because modern
+         browsers generate a lot of warnings for print-specific features. -->
+    <xsl:if test="$output-media != 'screen'">
+      <link href="{$resource-base-uri}{fp:minified-css('css/docbook-paged.css')}"
+            rel="stylesheet" media="print"/>
+    </xsl:if>
   </xsl:if>
 </xsl:template>
+
+<xsl:function name="fp:minified-css" as="xs:string">
+  <xsl:param name="css" as="xs:string"/>
+  <xsl:sequence select="if (f:is-true($use-minified-css))
+                        then replace($css, '\.css$', '.min.css')
+                        else $css"/>
+</xsl:function>
 
 <xsl:template match="*" mode="m:html-head-links">
 </xsl:template>

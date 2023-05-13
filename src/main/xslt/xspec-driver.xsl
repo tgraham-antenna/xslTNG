@@ -22,24 +22,25 @@
      element test is requested, only the body is returned.
  -->
 
-<xsl:import href="docbook.xsl"/>
+<xsl:import href="../xslt/docbook.xsl"/>
 
 <!-- Set some parameters to values that make testing easier/more consistent -->
 <xsl:param name="default-language" select="'en'"/>
 <xsl:param name="additional-languages" select="'de en fr cs'"/>
 
 <xsl:param name="xspec" select="'true'"/>
-<xsl:param name="mediaobject-input-base-uri"
-           select="resolve-uri('../../src/test/resources/media/')"/>
 <xsl:param name="mediaobject-output-base-uri" select="'media/'"/>
+<xsl:param name="mediaobject-output-paths" select="'false'"/>
+
 <xsl:param name="pixels-per-inch" select="96.0"/>
 <xsl:param name="nominal-page-width" select="'6in'"/>
 <xsl:param name="default-length" select="144"/>
 <xsl:param name="default-length-magnitude" select="25.0"/>
 <xsl:param name="default-length-unit" select="'%'"/>
 <xsl:param name="profile-os" select="'linux;win'"/>
+<xsl:param name="profile-outputformat" select="'online'"/>
 <xsl:param name="show-remarks" select="'true'"/>
-<xsl:param name="table-accessibility" select="('summary', 'details')"/>
+<xsl:param name="table-accessibility" select="'summary details'"/>
 <xsl:param name="bibliography-collection"
            select="resolve-uri('../../src/test/resources/bibcollection.xml')"/>
 <xsl:param name="glossary-collection"
@@ -51,11 +52,8 @@
 
 <!-- Configure dynamic profiling -->
 <xsl:param name="dynamic-profiles" select="'true'"/>
-<xsl:variable name="v:dynamic-profile-variables" as="map(xs:QName, item()*)">
+<xsl:param name="dynamic-profile-variables" as="map(xs:QName, item()*)">
   <xsl:map>
-    <xsl:for-each select="map:keys($vp:dynamic-parameters)">
-      <xsl:map-entry key="." select="map:get($vp:dynamic-parameters, .)"/>
-    </xsl:for-each>
     <xsl:map-entry key="QName('','thingy')" select="'enabled'"/>
     <xsl:map-entry key="QName('','istrue')" select="true()"/>
     <xsl:map-entry key="QName('','isfalse')" select="false()"/>
@@ -63,13 +61,16 @@
     <xsl:map-entry key="QName('','isthree')" select="3"/>
     <xsl:map-entry key="QName('','not-test-harness')" select="false()"/>
   </xsl:map>
-</xsl:variable>
+</xsl:param>
 
 <xsl:variable
     name="v:olink-databases"
     select="(doc(resolve-uri('../actual/guide.olinkdb'))/*,
              doc(resolve-uri('../actual/fit.001.olinkdb'))/*,
              doc(resolve-uri('../../src/website/resources/olinkdb/website.olinkdb'))/*)"/>
+
+<xsl:variable name="vp:random-prefix" as="xs:string"
+              select="'NOTRANDOMATALL'"/>
 
 <xsl:template match="*">
   <!-- Turn the inital element into a document. -->
