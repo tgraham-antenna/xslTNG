@@ -240,9 +240,12 @@ import static groovy.io.FileType.DIRECTORIES
 def pygmentize = findPygmentize()
 def findPygmentize() {
   def path = System.getenv()["PATH"]
+  if (path == null) {
+    path = System.getenv()["Path"]
+  }
   def script = null
   path.split(":+").each { segment ->
-    if (script == null) {
+    if (script == null && segment != null) {
       def testfile = new File("${segment}/pygmentize")
       if (testfile.exists() && testfile.canExecute()) {
         script = testfile.toString()
